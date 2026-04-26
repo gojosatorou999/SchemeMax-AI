@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Matched Schemes – SchemeMax AI{% endblock %}
+
+{% block content %}
+<section class="results-section section-padding">
+  <div class="container" style="max-width: 800px; margin: 2rem auto;">
+    <div class="results-header" style="margin-bottom: 2rem;">
+      <a href="{{ url_for('main.dashboard') }}" class="btn btn--ghost btn--sm" style="margin-bottom: 1rem;">&larr; Back to Dashboard</a>
+      
+      {% if schemes %}
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem;">
+          <div>
+            <h1 class="section-heading" style="margin-bottom: 0;">We found {{ schemes|length }} schemes that may help.</h1>
+            <p class="section-sub mt-1">Based on your situation, here are the programs you are most likely eligible for. We've ranked them by relevance.</p>
+          </div>
+          <button class="btn btn--teal" id="share-report-btn" style="flex-shrink: 0; margin-bottom: 1rem;">
+            📱 Send Report to WhatsApp
+          </button>
+        </div>
+      {% else %}
+        <h1 class="section-heading">No perfect matches found.</h1>
+        <p class="section-sub">We couldn't confidently match your exact situation, but you can still browse general schemes or try rephrasing your situation.</p>
+        <a href="{{ url_for('schemes.situation') }}" class="btn btn--primary">Try Again</a>
+      {% endif %}
+    </div>
+
+    {% if schemes %}
+      <div class="scheme-results-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for scheme in schemes %}
+          <div class="scheme-card" id="scheme-{{ scheme['id'] }}">
+            <div class="scheme-card-header">
+              <div>
+                <span class="scheme-cat-badge badge--{{ scheme['category'] }} mb-2" style="display: inline-block; margin-bottom: 0.5rem;">
+                  {{ scheme['category']|title }}
+                </span>
+                <h2 class="scheme-card-name">{{ scheme['name'] }}</h2>
+                <p class="scheme-card-desc mt-1">{{ scheme['short_description'] }}</p>
+              </div>
+              <div class="text-right" style="text-align: right;">
+                <div class="scheme-card-amt">{{ scheme['benefit_amount'] }}</div>
+                {% if scheme['score'] %}
+                  <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-top: 0.25rem;">
+                    Match Score: {{ scheme['score'] }}/100
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            {% if scheme['reasoning'] %}
+              <div class="reasoning-toggle mt-2">
+                <strong>Why this matches:</strong> {{ scheme['reasoning'] }}
+              </div>
+            {% endif %}
+
+            <div class="scheme-card-footer mt-4" style="border-top: 1px solid var(--border); padding-top: 1rem;">
+              <div style="font-size: 0.85rem; color: var(--text-muted);">
+                Issued by: {{ scheme['issuing_body'] }}
+              </div>
+              <a href="{{ url_for('schemes.scheme_detail', scheme_id=scheme['id'], situation=situation['id']) }}" class="btn btn--primary">
+                View Details & Checklist &rarr;
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if schemes %}
+    <!-- ── Nearby Healthcare CTA ──────────────────────────────────── -->
+    <div style="margin-top:2rem;background:linear-gradient(135deg,#0F766E,#0E7490);border-radius:14px;padding:1.5rem;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div style="font-weight:800;font-size:1.05rem;margin-bottom:0.3rem;">🗺️ Find Nearest Hospital &amp; Doctor</div>
+        <div style="font-size:0.85rem;opacity:0.85;">Locate healthcare providers that accept these schemes near you — with directions.</div>
+      </div>
+      <button id="nearby-results-btn" onclick="goNearby()"
+              style="background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.5);
+                     color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-weight:700;
+                     font-size:0.88rem;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);">
+        📍 Detect My Location &amp; Search
+      </button>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% block scripts %}
+<script>
+  document.getElementById('share-report-btn')?.addEventListener('click', function() {
+    const phone = prompt('Enter your phone number to receive the full report (including country code, e.g. +919876543210):');
+    if (!phone) return;
+    
+    const originalText = this.textContent;
+    this.textContent = 'Sending...';
+    this.disabled = true;
+    
+    fetch('/api/whatsapp/share_report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        situation_id: {{ situation['id'] if situation else 'null' }},
+        to_number: phone
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('Report sent successfully to WhatsApp!');
+      } else {
+        alert('Failed to send report: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Network error while sending report.');
+    })
+    .finally(() => {
+      this.textContent = originalText;
+      this.disabled = false;
+    });
+  });
+</script>
+
+<script>
+  function goNearby() {
+    const btn = document.getElementById('nearby-results-btn');
+    btn.textContent = '⏳ Detecting…';
+    btn.disabled = true;
+
+    if (!navigator.geolocation) {
+      window.location.href = '/nearby';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(5);
+        const lon = pos.coords.longitude.toFixed(5);
+        window.location.href = `/nearby?lat=${lat}&lon=${lon}`;
+      },
+      () => { window.location.href = '/nearby'; },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+</script>
+{% endblock %}
+{% endblock %}

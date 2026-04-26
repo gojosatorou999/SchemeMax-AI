@@ -1,0 +1,21 @@
+{
+  "name": "SchemeMax AI",
+  "short_name": "SchemeMax",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F9FC",
+  "theme_color": "#2C7BE5",
+  "description": "Discover Indian government medical and welfare schemes you may be eligible for.",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

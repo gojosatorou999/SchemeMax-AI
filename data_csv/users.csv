@@ -1,0 +1,8 @@
+id,email,password_hash,full_name,phone,state,age,income_bracket,preferred_language,created_at
+1,test@demo.com,scrypt:32768:8:1$NVTO1TvMy6VQUW5W$f7f6d5b03077668c2a9c5dbfa11a801188ac9cca45e9d3f2ac2612ce5c044903a7cbd83393e200ebba5efac13caaa7bd71511d45fc55b78afddaf1e94ed0db0a,Ravi Kumar,+91 9876543210,Telangana,40,1L_2.5L,en,2026-04-25 07:15:25
+2,ravi@demo.com,scrypt:32768:8:1$OBt9b6TPpp6ChYCD$94a335d6f72055ec4d87192c5fcf66b4f09247931fe811420f373c66c4503d22d02d259c6ca7d7dd0f6583e27f73608870fb37f6e7c7cc52a5fcfa5454b60780,,,,,,en,2026-04-25 07:18:01
+3,test_user_new@demo.com,scrypt:32768:8:1$Qz3CWEmmwj2V0exX$fb69d46975324128564de34763acac4c973cf00f558ca3500cd0ad37462aa42f78612093c3dc8d55aaad2f6cc9cf6a85a851c3a34f2f107b8a8aabb1bf127837,,,,,,en,2026-04-25 07:49:27
+4,final_test@demo.com,scrypt:32768:8:1$8SuDaqbh73tiHnLH$e8f16d2774475e5fafffe7f80c02a8a3041c63ac4c3978786b0a05acec7d1a21d325a2fc8509d2c2d67f721aab50a026689dbe267df864cdfc6901f2e014a613,,,,,,en,2026-04-25 07:52:02
+5,test2@demo.com,scrypt:32768:8:1$6NRY9w1UMMteSgWY$2279c22cde57a6c266e1f17e73c6561b1412ed6bec00038975c5b52bdcb228a1adb703378ba1c2e631ac2a6a63038a5640f0acacb518654327a026d28b7f8c01,,,,,,en,2026-04-25 08:21:59
+6,mathematicsacademy@gmail.com,scrypt:32768:8:1$SbWyVudUTAJNph6I$4f63bcd1de92d349d54e6d80fd85ea5a9b02c84a79e73fe707e677158fd49fbed70319fdf85299286da6ca8769ae6b262bb2bf0e6d9271c8d2d159a625515d20,gojo satorou needs a math teach ;-;,+91 9493579019,Telangana,12,1L_2.5L,en,2026-04-25 09:07:15
+7,mathematicsacademy007@gmail.com,scrypt:32768:8:1$z6D1rv6qHzHCzn8f$476b3bb98bd0634f8a3b2cca45b8db8b44e7d04738a6970b936472f70c6ce24e3133dbcf2b249a0c2e2e33a4a4c3f5ffcee510555c417f2f9fde1ae643bb2057,Rishanth,+91 9493579019,Telangana,23,1L_2.5L,en,2026-04-25 09:46:42

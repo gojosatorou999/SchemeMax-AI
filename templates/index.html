@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}SchemeMax AI – Find Government Health Schemes{% endblock %}
+
+{% block content %}
+<!-- ── Hero Section ──────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div>
+      <span class="hero-badge" data-i18n="hero.badge">✨ AI-Powered Welfare Assistance</span>
+      <h1 class="hero-title">
+        <span data-i18n="hero.title1">Unlock Government</span><br>
+        <span>Opportunities</span> <span data-i18n="hero.title2">with Precision.</span>
+      </h1>
+      <p class="hero-desc" data-i18n="hero.sub">
+        SchemeMax AI navigates thousands of government schemes to find the exact support you're eligible for. Faster, smarter, and tailored to your profile.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ url_for('auth.signup') }}" class="btn btn--primary" id="hero-cta-signup" data-i18n="hero.cta_signup">
+          Find My Schemes &rarr;
+        </a>
+        <a href="#how-it-works" class="btn btn--ghost" id="hero-cta-login" data-i18n="hero.cta_login">
+          How it Works
+        </a>
+      </div>
+    </div>
+    
+    <div>
+      <!-- Using a placeholder map image matching the reference styling -->
+      <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop" alt="World Map Tech" style="border-radius: var(--radius-lg); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); filter: brightness(0.8) contrast(1.2);" />
+    </div>
+  </div>
+</section>
+
+<!-- ── Features Section ──────────────────────────────────────────────── -->
+<section class="features" id="how-it-works">
+  <div class="container">
+    <div class="features-header">
+      <h2 class="features-title">Intelligent Scheme Management</h2>
+      <p style="color: var(--text-muted);">Our advanced AI engine simplifies the complexity of government bureaucracy into a seamless digital experience.</p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3 class="feature-title">AI Eligibility Engine</h3>
+        <p class="feature-desc">Our neural networks scan your profile against 5,000+ state and central schemes to ensure you never miss an opportunity.</p>
+      </div>
+      
+      <div class="feature-card feature-card--dark">
+        <div class="feature-icon" style="color: var(--accent);">🛡️</div>
+        <h3 class="feature-title" style="color: white;">Secure Vault</h3>
+        <p class="feature-desc">Blockchain-backed security for all your KYC and application documents.</p>
+        <div class="mt-4"><a href="{{ url_for('auth.signup') }}" style="color: var(--accent); font-weight: 600; font-size: 0.85rem;">Access Vault &rarr;</a></div>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">⏱️</div>
+        <h3 class="feature-title">Real-time Tracker</h3>
+        <p class="feature-desc">Live status updates from government servers directly to your dashboard.</p>
+        <div style="margin-top: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem;"><span>Processing</span><span>75%</span></div>
+          <div style="height: 4px; background: var(--border); border-radius: 999px;"><div style="height: 100%; width: 75%; background: var(--accent-text); border-radius: 999px;"></div></div>
+        </div>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3 class="feature-title">22+ Regional Languages</h3>
+        <p class="feature-desc">Accessibility for all. Interface and scheme details available in every official Indian language.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats Banner ──────────────────────────────────────────────── -->
+<section class="stats-banner">
+  <div class="container stats-banner-inner">
+    <div>
+      <div class="stat-banner-num">2M+</div>
+      <div class="stat-banner-label">Active Citizens</div>
+    </div>
+    <div>
+      <div class="stat-banner-num">₹50B+</div>
+      <div class="stat-banner-label">Disbursed Via AI</div>
+    </div>
+    <div>
+      <div class="stat-banner-num">98%</div>
+      <div class="stat-banner-label">Success Rate</div>
+    </div>
+    <div>
+      <div class="stat-banner-num">5k+</div>
+      <div class="stat-banner-label">Active Schemes</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Section ──────────────────────────────────────────────── -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card">
+      <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Ready to find your support?</h2>
+      <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2.5rem;">Join millions of citizens who are securing their future through informed welfare access. It only takes 2 minutes to scan.</p>
+      <div style="display: flex; justify-content: center; gap: 1.5rem;">
+        <a href="{{ url_for('auth.signup') }}" class="btn btn--primary" style="padding: 1rem 2rem; font-size: 1rem;">Start Free Eligibility Scan</a>
+        <a href="#" class="btn btn--ghost" style="padding: 1rem 2rem; font-size: 1rem;">Speak to an Advisor</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+{% block title %}Nearby Healthcare – SchemeMax AI{% endblock %}
+
+{% block head %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  #map { height: calc(100vh - 4rem - 220px); min-height: 380px; border-radius: 12px; }
+  .facility-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .facility-card:hover, .facility-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 4px 16px rgba(20,184,166,0.15);
+  }
+  .facility-card.emergency { border-left: 3px solid #EF4444; }
+  .dist-badge {
+    font-size: 0.72rem; font-weight: 700;
+    background: var(--accent-light); color: var(--accent-text);
+    padding: 0.15rem 0.5rem; border-radius: 99px;
+  }
+  .radius-btn { padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text-muted); font-size: 0.8rem; cursor: pointer; }
+  .radius-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:1200px;margin:0 auto;padding:1.5rem;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;">
+    <div>
+      <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:0.2rem;">
+        🗺️ Nearby Healthcare
+      </h1>
+      <p style="font-size:0.875rem;color:var(--text-muted);">
+        {{ 'For: ' + scheme_name if scheme_name else 'Hospitals, clinics & doctors near you' }}
+      </p>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <!-- Radius selector -->
+      <div style="display:flex;gap:0.4rem;">
+        <button class="radius-btn" data-r="2000" onclick="setRadius(2000,this)">2 km</button>
+        <button class="radius-btn active" data-r="5000" onclick="setRadius(5000,this)">5 km</button>
+        <button class="radius-btn" data-r="10000" onclick="setRadius(10000,this)">10 km</button>
+        <button class="radius-btn" data-r="20000" onclick="setRadius(20000,this)">20 km</button>
+      </div>
+      <!-- Detect location -->
+      <button id="detect-btn" onclick="detectLocation()"
+              style="background:var(--primary);color:var(--primary-text);border:none;padding:0.5rem 1rem;
+                     border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;display:flex;
+                     align-items:center;gap:0.4rem;">
+        📍 Detect My Location
+      </button>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div id="status-bar" style="background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;
+       padding:0.7rem 1rem;margin-bottom:1rem;font-size:0.875rem;color:var(--accent-text);display:flex;
+       align-items:center;gap:0.5rem;">
+    <span>📍</span>
+    <span id="status-text">Click <strong>Detect My Location</strong> to find nearby healthcare providers.</span>
+  </div>
+
+  <!-- Main layout: map + list -->
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1.25rem;">
+
+    <!-- Map -->
+    <div>
+      <div id="map"></div>
+      <!-- Manual location input -->
+      <div style="margin-top:0.75rem;display:flex;gap:0.5rem;align-items:center;">
+        <input id="manual-lat" type="number" step="0.0001" placeholder="Latitude (e.g. 17.3850)"
+               style="flex:1;padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:8px;
+                      background:var(--surface);color:var(--text);font-size:0.85rem;outline:none;" />
+        <input id="manual-lon" type="number" step="0.0001" placeholder="Longitude (e.g. 78.4867)"
+               style="flex:1;padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:8px;
+                      background:var(--surface);color:var(--text);font-size:0.85rem;outline:none;" />
+        <button onclick="searchManual()"
+                style="background:var(--surface);border:1px solid var(--border);border-radius:8px;
+                       padding:0.5rem 0.9rem;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--text);">
+          Search
+        </button>
+      </div>
+      <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.35rem;">
+        Tip: You can also click anywhere on the map to search from that point.
+      </p>
+    </div>
+
+    <!-- Facility list -->
+    <div style="display:flex;flex-direction:column;gap:0.75rem;max-height:calc(100vh - 280px);overflow-y:auto;">
+      <div id="facility-list">
+        <div style="text-align:center;padding:3rem 1rem;color:var(--text-muted);">
+          <div style="font-size:2.5rem;margin-bottom:0.75rem;">🔍</div>
+          <div style="font-weight:600;">No results yet</div>
+          <div style="font-size:0.82rem;margin-top:0.3rem;">Detect your location to find nearby facilities</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // ── State ──────────────────────────────────────────────────────────
+  let _map, _userMarker, _markers = [], _radius = 5000;
+  let _userLat = null, _userLon = null;
+
+  // ── Leaflet init ───────────────────────────────────────────────────
+  function initMap(lat, lon) {
+    if (_map) {
+      _map.setView([lat, lon], 14);
+      return;
+    }
+    _map = L.map('map').setView([lat, lon], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(_map);
+
+    // Click on map to search
+    _map.on('click', function(e) {
+      _userLat = e.latlng.lat;
+      _userLon = e.latlng.lng;
+      document.getElementById('manual-lat').value = _userLat.toFixed(5);
+      document.getElementById('manual-lon').value = _userLon.toFixed(5);
+      placeUserMarker(_userLat, _userLon);
+      fetchFacilities(_userLat, _userLon);
+    });
+  }
+
+  // ── User marker (pulsing blue dot) ────────────────────────────────
+  function placeUserMarker(lat, lon) {
+    if (_userMarker) _map.removeLayer(_userMarker);
+    const icon = L.divIcon({
+      html: `<div style="width:16px;height:16px;border-radius:50%;
+                          background:#3B82F6;border:3px solid white;
+                          box-shadow:0 0 0 4px rgba(59,130,246,0.3);"></div>`,
+      iconSize: [16, 16], iconAnchor: [8, 8], className: ''
+    });
+    _userMarker = L.marker([lat, lon], { icon }).addTo(_map).bindPopup('📍 You are here');
+    _map.setView([lat, lon], 14);
+  }
+
+  // ── Clear facility markers ────────────────────────────────────────
+  function clearMarkers() {
+    _markers.forEach(m => _map.removeLayer(m));
+    _markers = [];
+  }
+
+  // ── Detect location ───────────────────────────────────────────────
+  function detectLocation() {
+    const btn = document.getElementById('detect-btn');
+    setStatus('⏳', 'Detecting your location…');
+    btn.disabled = true;
+    btn.textContent = '⏳ Detecting…';
+
+    if (!navigator.geolocation) {
+      setStatus('❌', 'Geolocation is not supported by your browser.');
+      btn.disabled = false; btn.textContent = '📍 Detect My Location';
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        _userLat = pos.coords.latitude;
+        _userLon = pos.coords.longitude;
+        document.getElementById('manual-lat').value = _userLat.toFixed(5);
+        document.getElementById('manual-lon').value = _userLon.toFixed(5);
+        initMap(_userLat, _userLon);
+        placeUserMarker(_userLat, _userLon);
+        fetchFacilities(_userLat, _userLon);
+        btn.disabled = false; btn.textContent = '📍 Detect My Location';
+      },
+      (err) => {
+        setStatus('❌', 'Could not get location: ' + err.message + '. Enter coordinates manually.');
+        btn.disabled = false; btn.textContent = '📍 Detect My Location';
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  // ── Manual search ─────────────────────────────────────────────────
+  function searchManual() {
+    const lat = parseFloat(document.getElementById('manual-lat').value);
+    const lon = parseFloat(document.getElementById('manual-lon').value);
+    if (isNaN(lat) || isNaN(lon)) { alert('Enter valid latitude and longitude.'); return; }
+    _userLat = lat; _userLon = lon;
+    initMap(lat, lon);
+    placeUserMarker(lat, lon);
+    fetchFacilities(lat, lon);
+  }
+
+  // ── Set search radius ─────────────────────────────────────────────
+  function setRadius(r, btn) {
+    _radius = r;
+    document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (_userLat) fetchFacilities(_userLat, _userLon);
+  }
+
+  // ── Fetch from backend ────────────────────────────────────────────
+  async function fetchFacilities(lat, lon) {
+    setStatus('⏳', `Searching for hospitals & clinics within ${_radius/1000} km…`);
+    clearMarkers();
+
+    try {
+      const res = await fetch(`/api/nearby?lat=${lat}&lon=${lon}&radius=${_radius}`);
+      const data = await res.json();
+      if (data.error) { setStatus('❌', data.error); return; }
+      renderFacilities(data.facilities, lat, lon);
+      setStatus('✅', `Found ${data.count} healthcare facilities within ${_radius/1000} km of your location.`);
+    } catch (e) {
+      setStatus('❌', 'Network error. Please try again.');
+    }
+  }
+
+  // ── Render facility list + map markers ────────────────────────────
+  function renderFacilities(facilities, userLat, userLon) {
+    const list = document.getElementById('facility-list');
+
+    if (!facilities.length) {
+      list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted);">
+        <div style="font-size:2rem;">😔</div>
+        <div style="font-weight:600;margin-top:0.5rem;">No facilities found nearby</div>
+        <div style="font-size:0.82rem;margin-top:0.3rem;">Try increasing the search radius</div>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+
+    facilities.forEach((f, i) => {
+      // Map marker
+      const color = f.kind.includes('Hospital') ? '#EF4444' :
+                    f.kind.includes('Clinic')   ? '#F59E0B' : '#10B981';
+      const icon = L.divIcon({
+        html: `<div style="width:30px;height:30px;border-radius:50% 50% 50% 0;
+                            transform:rotate(-45deg);background:${color};
+                            border:2px solid white;display:flex;align-items:center;
+                            justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);">
+                 <span style="transform:rotate(45deg);font-size:13px;">
+                   ${f.kind.includes('Hospital') ? '🏥' : f.kind.includes('Clinic') ? '🏨' : '👨‍⚕️'}
+                 </span>
+               </div>`,
+        iconSize: [30, 30], iconAnchor: [15, 30], className: ''
+      });
+
+      const popup = `<div style="min-width:180px;">
+        <strong style="font-size:0.9rem;">${f.name}</strong><br>
+        <span style="color:#64748B;font-size:0.8rem;">${f.kind}</span><br>
+        <span style="font-size:0.78rem;">📏 ${f.dist_km} km away</span>
+        ${f.phone ? `<br><span style="font-size:0.78rem;">📞 ${f.phone}</span>` : ''}
+        ${f.address ? `<br><span style="font-size:0.78rem;">📍 ${f.address}</span>` : ''}
+        ${f.emergency ? '<br><span style="color:#EF4444;font-size:0.75rem;font-weight:700;">🚨 Emergency Available</span>' : ''}
+        <br><a href="https://www.openstreetmap.org/directions?to=${f.lat},${f.lon}"
+               target="_blank" style="font-size:0.78rem;color:#14B8A6;">🗺️ Get Directions →</a>
+      </div>`;
+
+      const marker = L.marker([f.lat, f.lon], { icon })
+        .addTo(_map)
+        .bindPopup(popup);
+      _markers.push(marker);
+
+      // List card
+      const card = document.createElement('div');
+      card.className = 'facility-card' + (f.emergency ? ' emergency' : '');
+      card.id = `card-${i}`;
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;">
+          <span style="font-weight:700;font-size:0.88rem;line-height:1.3;">${f.name}</span>
+          <span class="dist-badge" style="flex-shrink:0;margin-left:0.5rem;">${f.dist_km} km</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;">${f.kind}</div>
+        ${f.emergency ? '<div style="font-size:0.72rem;font-weight:700;color:#EF4444;margin-bottom:0.4rem;">🚨 Emergency</div>' : ''}
+        ${f.phone ? `<div style="font-size:0.75rem;color:var(--text-muted);">📞 ${f.phone}</div>` : ''}
+        ${f.address ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.2rem;">📍 ${f.address}</div>` : ''}
+        <div style="display:flex;gap:0.5rem;margin-top:0.65rem;">
+          <a href="https://www.openstreetmap.org/directions?to=${f.lat},${f.lon}" target="_blank"
+             style="flex:1;text-align:center;padding:0.35rem 0;border-radius:6px;
+                    background:var(--accent-light);color:var(--accent-text);font-size:0.78rem;
+                    font-weight:600;text-decoration:none;">
+            🗺️ Directions
+          </a>
+          <a href="https://maps.google.com/?q=${f.lat},${f.lon}" target="_blank"
+             style="flex:1;text-align:center;padding:0.35rem 0;border-radius:6px;
+                    background:var(--bg);color:var(--text-muted);font-size:0.78rem;
+                    font-weight:600;text-decoration:none;border:1px solid var(--border);">
+            Google Maps
+          </a>
+        </div>`;
+
+      // Click card → fly to marker on map
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.facility-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        _map.flyTo([f.lat, f.lon], 16, { duration: 0.8 });
+        marker.openPopup();
+      });
+
+      list.appendChild(card);
+    });
+
+    // Fit map to show all results
+    if (_markers.length > 0) {
+      const group = L.featureGroup([..._markers, _userMarker]);
+      _map.fitBounds(group.getBounds().pad(0.1));
+    }
+  }
+
+  // ── Status bar helper ─────────────────────────────────────────────
+  function setStatus(icon, msg) {
+    document.querySelector('#status-bar span:first-child').textContent = icon;
+    document.getElementById('status-text').innerHTML = msg;
+  }
+
+  // ── Auto-detect on page load if coming from results ───────────────
+  window.addEventListener('load', () => {
+    // Default map centred on India
+    initMap(20.5937, 78.9629);
+    _map.setZoom(5);
+
+    // If URL has lat/lon pre-set, auto-search
+    const params = new URLSearchParams(location.search);
+    const lat = parseFloat(params.get('lat'));
+    const lon = parseFloat(params.get('lon'));
+    if (!isNaN(lat) && !isNaN(lon)) {
+      _userLat = lat; _userLon = lon;
+      document.getElementById('manual-lat').value = lat;
+      document.getElementById('manual-lon').value = lon;
+      placeUserMarker(lat, lon);
+      fetchFacilities(lat, lon);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – SchemeMax AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="dash-header">
+    <h1 class="dash-title">Welcome back, {{ g.user['full_name'] or g.user['email'].split('@')[0]|title }}</h1>
+    <p class="dash-sub">Your AI advisor has found new schemes matching your profile since your last visit.</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--accent">✨</div>
+      <div>
+        <div class="stat-label">Total Matches</div>
+        <div class="stat-val">{{ '%02d' % stats.total_matches }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--gray">🔍</div>
+      <div>
+        <div class="stat-label">Searches Run</div>
+        <div class="stat-val">{{ '%02d' % stats.total_searches }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--orange">📁</div>
+      <div>
+        <div class="stat-label">Docs Scanned</div>
+        <div class="stat-val">{{ '%02d' % stats.docs_scanned }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--red">🔔</div>
+      <div>
+        <div class="stat-label">This Week</div>
+        <div class="stat-val">{{ '%02d' % stats.action_items }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-main">
+    <!-- Left Column: Recommended Matches -->
+    <div>
+      <div class="card" style="padding: 0;">
+        <div class="card-header">
+          <h2 class="card-title">Recommended for You</h2>
+          <a href="{{ url_for('schemes.situation') }}" style="color: var(--accent-text); font-weight: 600; font-size: 0.85rem;">View All Matches &rarr;</a>
+        </div>
+        <div class="card-body">
+          {% for scheme in recommended %}
+            <div class="match-card">
+              <div class="match-header">
+                <div class="match-title-wrap">
+                  <div class="match-icon">🏛️</div>
+                  <div>
+                    <div class="match-title">{{ scheme['name'] }}</div>
+                    <div class="match-org">{{ scheme['issuing_body'] }}</div>
+                  </div>
+                </div>
+                <div class="match-badge">{{ scheme.get('score', 98) }}% Match</div>
+              </div>
+              <p class="match-desc">{{ scheme['short_description'] }}</p>
+              <div class="match-footer">
+                <div class="match-tags">
+                  <span class="tag">{{ scheme['category']|title }}</span>
+                </div>
+                <a href="{{ url_for('schemes.scheme_detail', scheme_id=scheme['id']) }}" class="btn btn--primary">Apply Now</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Sidebar Panels -->
+    <div>
+      <div class="insight-panel">
+        <div class="insight-title">⚡ AI Insight</div>
+        <p class="insight-text">"Based on your recent address update, you are now eligible for the <strong>Solar Rooftop Subsidy Phase III</strong>."</p>
+        <a href="{{ url_for('schemes.situation') }}" class="btn btn--accent" style="width: 100%; text-align: center;">Check Eligibility →</a>
+      </div>
+
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-body">
+          <h3 class="card-title" style="margin-bottom: 1.5rem; font-size: 1.1rem;">Quick Status</h3>
+          
+          <div class="status-item">
+            <div class="status-label"><span>Startup India Grant</span> <span style="color: var(--accent-text); font-weight: 500;">Verification Phase</span></div>
+            <div class="status-bar-bg"><div class="status-bar-fill" style="width: 80%;"></div></div>
+          </div>
+          
+          <div class="status-item">
+            <div class="status-label"><span>Digital India Fellowship</span> <span style="color: var(--text-muted); font-weight: 500;">Under Review</span></div>
+            <div class="status-bar-bg"><div class="status-bar-fill" style="width: 35%; background: var(--text-muted);"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card alert-card">
+        <div class="card-body">
+          <div class="alert-title">📅 Deadline Tomorrow</div>
+          <p class="alert-desc">Upload Form 16 for Health Insurance Rebate</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

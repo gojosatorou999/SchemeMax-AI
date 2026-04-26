@@ -1,0 +1,565 @@
+{% extends "base.html" %}
+{% block title %}Discover Benefits – SchemeMax AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="sit-layout">
+    <!-- ── Left Column ─────────────────────────────────────────────── -->
+    <div>
+      <div class="sit-header">
+        <h1 class="dash-title">Discover Your Eligible Welfare Benefits</h1>
+        <p class="dash-sub mt-2" style="max-width:600px;">Describe your situation, upload a document, or use your camera to scan. SchemeMax AI will match you with 5,000+ government schemes instantly.</p>
+      </div>
+
+      <div class="sit-box">
+        <h2 class="sit-box-title"><span style="color:var(--accent-text);">✨</span> Smart Matching AI</h2>
+
+        <div class="chat-bubble">
+          <div style="display:flex;gap:0.85rem;align-items:flex-start;">
+            <div style="background:var(--primary);color:var(--primary-text);width:28px;height:28px;border-radius:4px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">AI</div>
+            <div>Hello! Describe your situation below, or upload / scan a document like an Aadhaar card, Income Certificate, or Ration Card — I'll extract the text and match you with schemes automatically.</div>
+          </div>
+        </div>
+
+        <!-- OCR Status Bar (hidden until upload starts) -->
+        <div id="ocr-status" style="display:none;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;padding:0.85rem 1rem;margin-bottom:1rem;font-size:0.88rem;color:var(--accent-text);align-items:center;gap:0.6rem;">
+          <span id="ocr-status-icon">⏳</span>
+          <span id="ocr-status-text">Processing document…</span>
+        </div>
+
+        <form action="{{ url_for('schemes.situation') }}" method="POST" id="situation-form">
+          <label style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;display:block;">Describe your requirements</label>
+          <div style="position:relative;">
+            <textarea name="description" id="description" class="sit-textarea"
+                      placeholder="E.g. 'I am a 45-year-old farmer from Telangana with annual income below ₹1.5 lakh. I need support for medical expenses and education for my children.'"
+                      required></textarea>
+            <button type="submit" class="btn btn--primary" id="submit-btn"
+                    style="position:absolute;bottom:1.5rem;right:1rem;border-radius:999px;">
+              Analyze Profile →
+            </button>
+          </div>
+        </form>
+
+        <!-- Upload Buttons -->
+        <div class="upload-row">
+          <!-- File upload -->
+          <input type="file" id="ocr-upload" accept="image/*,application/pdf" style="display:none;" />
+          <div class="upload-btn" onclick="document.getElementById('ocr-upload').click()" style="cursor:pointer;">
+            <div style="color:var(--accent-text);font-size:1.5rem;margin-bottom:0.5rem;">📄</div>
+            <div style="font-weight:600;margin-bottom:0.25rem;">Upload ID Documents</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Aadhaar, Ration Card, etc.</div>
+          </div>
+
+          <!-- Camera — opens live WebRTC camera with front/back toggle -->
+          <div class="upload-btn" onclick="openCameraModal()" style="cursor:pointer;">
+            <div style="color:var(--accent-text);font-size:1.5rem;margin-bottom:0.5rem;">📷</div>
+            <div style="font-weight:600;margin-bottom:0.25rem;">Scan with Camera</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">Live capture • Front / Back</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Feature pills -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.75rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;">
+          <div style="color:var(--success);font-size:1.3rem;margin-bottom:0.5rem;">🛡️</div>
+          <div style="font-size:0.88rem;font-weight:700;margin-bottom:0.3rem;">Secure Data</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">End-to-end encrypted. Never shared without consent.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;">
+          <div style="color:var(--accent-text);font-size:1.3rem;margin-bottom:0.5rem;">🔍</div>
+          <div style="font-size:0.88rem;font-weight:700;margin-bottom:0.3rem;">OCR Precision</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">AI extracts text from handwritten & printed documents.</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;">
+          <div style="color:var(--accent-text);font-size:1.3rem;margin-bottom:0.5rem;">⚡</div>
+          <div style="font-size:0.88rem;font-weight:700;margin-bottom:0.3rem;">Instant Match</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">Matched schemes in under 30 seconds.</div>
+        </div>
+      </div>
+
+      <!-- Find Nearby Healthcare button -->
+      <div style="margin-top:1.25rem;">
+        <button onclick="detectAndFindNearby()" id="nearby-btn"
+                style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.6rem;
+                       padding:0.75rem 1rem;border-radius:10px;border:1px dashed var(--accent);
+                       background:var(--accent-light);color:var(--accent-text);font-weight:700;
+                       font-size:0.88rem;cursor:pointer;transition:all 0.2s;">
+          📍 Find Nearest Hospital / Doctor
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Right Column ─────────────────────────────────────────────── -->
+    <div>
+      <!-- Document Analysis Report (shown after OCR) -->
+      <div id="doc-report-card" style="display:none;" class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size:1rem;">📋 Document Analysis Report</h3>
+          <span id="doc-report-badge" style="background:var(--accent-light);color:var(--accent-text);font-size:0.75rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:999px;">AI</span>
+        </div>
+        <div class="card-body">
+          <div id="doc-report-content" style="font-size:0.875rem;color:var(--text-muted);line-height:1.7;white-space:pre-wrap;"></div>
+          <button id="use-report-btn" class="btn btn--accent btn--full" style="margin-top:1rem;">
+            Use This for Scheme Matching →
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Processing Status -->
+      <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+          <h3 class="card-title" style="margin-bottom:1.25rem;">AI Processing Status</h3>
+          <ul class="process-list">
+            <li class="process-item">
+              <div class="process-icon" style="background:var(--success);color:white;">✓</div>
+              <div>
+                <div class="process-title">Basic Profile Loaded</div>
+                <div class="process-desc">Account details verified</div>
+              </div>
+            </li>
+            <li class="process-item" id="step-ocr">
+              <div class="process-icon" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border);">⌛</div>
+              <div>
+                <div class="process-title" style="color:var(--text-muted);">Document Scanning</div>
+                <div class="process-desc">Upload or scan a document to activate</div>
+              </div>
+            </li>
+            <li class="process-item" id="step-match" style="opacity:0.5;">
+              <div class="process-icon" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border);">...</div>
+              <div>
+                <div class="process-title">Predicting Eligibility</div>
+                <div class="process-desc">Analysing against 5,000+ schemes</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Top Potential Matches sidebar -->
+      <div class="card" style="background:var(--primary);color:var(--primary-text);border:none;">
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+            <h3 style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Top Potential Matches</h3>
+            <span style="background:var(--accent-text);color:var(--accent-light);font-size:0.65rem;padding:0.2rem 0.5rem;border-radius:4px;font-weight:700;">24 NEW</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:var(--radius-sm);margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.1);">
+            <div>
+              <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.2rem;">PM-Kisan Samman Nidhi</div>
+              <div style="font-size:0.72rem;color:#94A3B8;">Direct Income Support • ₹6,000/yr</div>
+            </div>
+            <div style="color:var(--accent);">→</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:var(--radius-sm);margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.1);">
+            <div>
+              <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.2rem;">Ayushman Bharat PM-JAY</div>
+              <div style="font-size:0.72rem;color:#94A3B8;">Health Insurance • ₹5 Lakh cover</div>
+            </div>
+            <div style="color:var(--accent);">→</div>
+          </div>
+          <div class="text-center">
+            <a href="{{ url_for('main.dashboard') }}" style="color:var(--accent);font-weight:600;font-size:0.88rem;">View All Matches</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── OCR Analysis Modal ─────────────────────────────────────── -->
+<div id="ocr-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:16px;padding:2rem;max-width:520px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3);position:relative;">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem;" id="modal-icon">⏳</div>
+      <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:0.3rem;" id="modal-title">Scanning Document…</h2>
+      <p style="font-size:0.88rem;color:var(--text-muted);" id="modal-sub">AI is extracting text from your document</p>
+    </div>
+
+    <!-- Progress steps -->
+    <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.5rem;" id="modal-steps">
+      <div class="modal-step" id="mstep-1" style="display:flex;align-items:center;gap:0.7rem;padding:0.65rem 1rem;border-radius:8px;background:var(--bg);">
+        <span style="width:20px;height:20px;border-radius:50%;background:var(--accent-light);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;" id="ms1-icon">1</span>
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;">OCR Text Extraction</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Reading text from your document</div>
+        </div>
+      </div>
+      <div class="modal-step" id="mstep-2" style="display:flex;align-items:center;gap:0.7rem;padding:0.65rem 1rem;border-radius:8px;background:var(--bg);opacity:0.5;">
+        <span style="width:20px;height:20px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;" id="ms2-icon">2</span>
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;">LLM Document Analysis</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">AI is generating eligibility report</div>
+        </div>
+      </div>
+      <div class="modal-step" id="mstep-3" style="display:flex;align-items:center;gap:0.7rem;padding:0.65rem 1rem;border-radius:8px;background:var(--bg);opacity:0.5;">
+        <span style="width:20px;height:20px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;" id="ms3-icon">3</span>
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;">Ready for Scheme Matching</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Report will auto-populate the form</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result area -->
+    <div id="modal-result" style="display:none;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:0.83rem;color:var(--text-muted);line-height:1.7;max-height:200px;overflow-y:auto;white-space:pre-wrap;margin-bottom:1rem;" id="modal-result-text"></div>
+      <div style="display:flex;gap:0.75rem;">
+        <button id="modal-match-btn" class="btn btn--primary" style="flex:1;">
+          ✨ Match Schemes Now
+        </button>
+        <button id="modal-close-btn" class="btn btn--ghost" style="flex:1;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Live Camera Modal (WebRTC) ───────────────────────────────────── -->
+<div id="cam-modal"
+     style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:#0F172A;border-radius:16px;overflow:hidden;width:min(480px,95vw);position:relative;">
+
+    <!-- Title bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1.1rem;background:#1E293B;">
+      <span style="font-weight:700;font-size:0.95rem;color:#F1F5F9;">📷 Scan Document</span>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <!-- Flip camera -->
+        <button id="cam-flip-btn"
+                onclick="flipCamera()"
+                style="background:#334155;border:none;color:#94A3B8;border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;font-size:0.8rem;font-weight:600;">
+          🔄 Flip
+        </button>
+        <!-- Close -->
+        <button onclick="closeCameraModal()"
+                style="background:#334155;border:none;color:#94A3B8;border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;font-size:1rem;">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Live preview -->
+    <div style="position:relative;background:#000;aspect-ratio:4/3;">
+      <video id="cam-video" autoplay playsinline muted
+             style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+      <!-- Scanning overlay -->
+      <div style="position:absolute;inset:0;pointer-events:none;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+                    width:75%;height:60%;border:2px solid rgba(20,184,166,0.8);
+                    border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,0.35);">
+          <div style="position:absolute;top:-1px;left:-1px;width:20px;height:20px;border-top:3px solid #14B8A6;border-left:3px solid #14B8A6;border-radius:2px 0 0 0;"></div>
+          <div style="position:absolute;top:-1px;right:-1px;width:20px;height:20px;border-top:3px solid #14B8A6;border-right:3px solid #14B8A6;border-radius:0 2px 0 0;"></div>
+          <div style="position:absolute;bottom:-1px;left:-1px;width:20px;height:20px;border-bottom:3px solid #14B8A6;border-left:3px solid #14B8A6;border-radius:0 0 0 2px;"></div>
+          <div style="position:absolute;bottom:-1px;right:-1px;width:20px;height:20px;border-bottom:3px solid #14B8A6;border-right:3px solid #14B8A6;border-radius:0 0 2px 0;"></div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;text-align:center;padding:0.5rem;font-size:0.75rem;color:rgba(255,255,255,0.7);">
+          Align document inside the frame
+        </div>
+      </div>
+      <!-- Hidden canvas for capture -->
+      <canvas id="cam-canvas" style="display:none;"></canvas>
+    </div>
+
+    <!-- Camera selection + Capture -->
+    <div style="padding:1rem;display:flex;flex-direction:column;gap:0.75rem;background:#1E293B;">
+      <!-- Camera selector dropdown (populated by JS) -->
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <label style="font-size:0.78rem;color:#94A3B8;font-weight:600;flex-shrink:0;">Camera:</label>
+        <select id="cam-select" onchange="switchCamera(this.value)"
+                style="flex:1;background:#334155;color:#F1F5F9;border:1px solid #475569;border-radius:6px;padding:0.35rem 0.6rem;font-size:0.8rem;outline:none;">
+        </select>
+      </div>
+      <!-- Capture button -->
+      <button onclick="capturePhoto()"
+              style="width:100%;padding:0.85rem;background:#14B8A6;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:0.02em;">
+        📸 Capture
+      </button>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── Shared OCR processing function ────────────────────────────────────
+  async function processDocumentFile(file, source) {
+    // Show modal
+    const modal = document.getElementById('ocr-modal');
+    modal.style.display = 'flex';
+    document.getElementById('modal-icon').textContent = '⏳';
+    document.getElementById('modal-title').textContent = source === 'camera' ? 'Processing Camera Scan…' : 'Processing Document…';
+    document.getElementById('modal-sub').textContent = 'AI is extracting text — this takes a few seconds';
+    document.getElementById('modal-result').style.display = 'none';
+
+    // Reset steps
+    ['ms1-icon','ms2-icon','ms3-icon'].forEach((id,i) => {
+      const el = document.getElementById(id);
+      el.textContent = i+1;
+      el.style.background = 'var(--bg)';
+      el.style.border = '1px solid var(--border)';
+      el.style.color = 'var(--text-muted)';
+      document.getElementById(['mstep-1','mstep-2','mstep-3'][i]).style.opacity = i===0 ? '1' : '0.5';
+    });
+
+    // Step 1 active
+    const s1 = document.getElementById('ms1-icon');
+    s1.style.background = 'var(--accent-light)';
+    s1.style.border = 'none';
+    s1.style.color = 'var(--accent-text)';
+
+    // ── Step 1: OCR ───────────────────────────────────────────────────
+    let extractedText = '';
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/ocr/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'OCR failed');
+      extractedText = data.text;
+
+      // Step 1 done ✓
+      s1.textContent = '✓';
+      s1.style.background = '#10B981';
+      s1.style.color = '#fff';
+      document.getElementById('mstep-2').style.opacity = '1';
+    } catch (err) {
+      document.getElementById('modal-icon').textContent = '❌';
+      document.getElementById('modal-title').textContent = 'OCR Failed';
+      document.getElementById('modal-sub').textContent = err.message;
+      document.getElementById('modal-result').style.display = 'block';
+      document.getElementById('modal-result-text').textContent = 'Could not read the document. Please try a clearer image.';
+      return;
+    }
+
+    // ── Step 2: LLM Analysis ──────────────────────────────────────────
+    const s2 = document.getElementById('ms2-icon');
+    s2.style.background = 'var(--accent-light)';
+    s2.style.border = 'none';
+    s2.style.color = 'var(--accent-text)';
+
+    let llmReport = extractedText; // fallback
+    try {
+      const res = await fetch('/api/ocr/analyse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: extractedText })
+      });
+      const data = await res.json();
+      if (data.success) llmReport = data.report;
+
+      s2.textContent = '✓';
+      s2.style.background = '#10B981';
+      s2.style.color = '#fff';
+    } catch (_) {
+      // If LLM analyse endpoint fails, just use raw OCR text
+      s2.textContent = '✓';
+      s2.style.background = '#10B981';
+      s2.style.color = '#fff';
+    }
+
+    // ── Step 3: Ready ─────────────────────────────────────────────────
+    document.getElementById('mstep-3').style.opacity = '1';
+    const s3 = document.getElementById('ms3-icon');
+    s3.textContent = '✓';
+    s3.style.background = '#10B981';
+    s3.style.border = 'none';
+    s3.style.color = '#fff';
+
+    document.getElementById('modal-icon').textContent = '✅';
+    document.getElementById('modal-title').textContent = 'Analysis Complete!';
+    document.getElementById('modal-sub').textContent = 'Review the report and click Match Schemes.';
+
+    // Show result
+    document.getElementById('modal-result-text').textContent = llmReport;
+    document.getElementById('modal-result').style.display = 'block';
+
+    // Also populate the sidebar doc report card
+    const reportCard = document.getElementById('doc-report-card');
+    document.getElementById('doc-report-content').textContent = llmReport;
+    reportCard.style.display = 'block';
+
+    // Update status stepper in sidebar
+    const stepOcr = document.getElementById('step-ocr');
+    stepOcr.querySelector('.process-icon').textContent = '✓';
+    stepOcr.querySelector('.process-icon').style.background = 'var(--success)';
+    stepOcr.querySelector('.process-icon').style.color = '#fff';
+    stepOcr.querySelector('.process-title').style.color = 'var(--text)';
+    document.getElementById('step-match').style.opacity = '1';
+
+    // Wire up Match button
+    document.getElementById('modal-match-btn').onclick = () => {
+      document.getElementById('description').value = llmReport;
+      modal.style.display = 'none';
+      document.getElementById('situation-form').submit();
+    };
+
+    // Wire up "Use This" button in sidebar
+    document.getElementById('use-report-btn').onclick = () => {
+      document.getElementById('description').value = llmReport;
+      modal.style.display = 'none';
+      document.getElementById('situation-form').submit();
+    };
+  }
+
+  // ── File upload handler ────────────────────────────────────────────
+  document.getElementById('ocr-upload').addEventListener('change', function () {
+    if (this.files.length) processDocumentFile(this.files[0], 'upload');
+    this.value = '';
+  });
+
+  // ── Modal close button ─────────────────────────────────────────────
+  document.getElementById('modal-close-btn')?.addEventListener('click', () => {
+    document.getElementById('ocr-modal').style.display = 'none';
+  });
+
+  // Close OCR modal on backdrop click
+  document.getElementById('ocr-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+</script>
+
+<!-- ── WebRTC Camera Module ─────────────────────────────────────────── -->
+<script>
+  let _camStream   = null;
+  let _camDevices  = [];   // [{deviceId, label, facing}]
+  let _camIdx      = 0;    // current device index
+
+  // ── Open the camera modal ──────────────────────────────────────────
+  async function openCameraModal() {
+    const modal = document.getElementById('cam-modal');
+    modal.style.display = 'flex';
+
+    // Enumerate cameras
+    try {
+      // First request permission so labels are revealed
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      _camDevices = devices
+        .filter(d => d.kind === 'videoinput')
+        .map(d => ({
+          deviceId: d.deviceId,
+          label: d.label || 'Camera',
+          facing: d.label.toLowerCase().includes('front') ? 'user' : 'environment'
+        }));
+
+      // Populate select
+      const sel = document.getElementById('cam-select');
+      sel.innerHTML = '';
+      _camDevices.forEach((cam, i) => {
+        const opt = document.createElement('option');
+        opt.value = cam.deviceId;
+        opt.textContent = cam.label || (i === 0 ? '📷 Back Camera' : '🤳 Front Camera');
+        sel.appendChild(opt);
+      });
+
+      // Default to back camera if available
+      const backIdx = _camDevices.findIndex(c => c.facing === 'environment' || c.label.toLowerCase().includes('back'));
+      _camIdx = backIdx >= 0 ? backIdx : 0;
+      sel.selectedIndex = _camIdx;
+
+      await _startStream(_camDevices[_camIdx].deviceId);
+    } catch (err) {
+      alert('Camera access denied or not available: ' + err.message);
+      closeCameraModal();
+    }
+  }
+
+  // ── Start stream for a given deviceId ────────────────────────────
+  async function _startStream(deviceId) {
+    if (_camStream) {
+      _camStream.getTracks().forEach(t => t.stop());
+      _camStream = null;
+    }
+    const constraints = {
+      video: deviceId
+        ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 960 } }
+        : { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: false
+    };
+    _camStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = document.getElementById('cam-video');
+    video.srcObject = _camStream;
+  }
+
+  // ── Switch camera from dropdown ───────────────────────────────────
+  async function switchCamera(deviceId) {
+    await _startStream(deviceId);
+  }
+
+  // ── Flip button — toggle between first two cameras ────────────────
+  async function flipCamera() {
+    if (_camDevices.length < 2) return;
+    _camIdx = (_camIdx + 1) % _camDevices.length;
+    const sel = document.getElementById('cam-select');
+    sel.selectedIndex = _camIdx;
+    await _startStream(_camDevices[_camIdx].deviceId);
+  }
+
+  // ── Capture current frame and send to OCR pipeline ───────────────
+  async function capturePhoto() {
+    const video  = document.getElementById('cam-video');
+    const canvas = document.getElementById('cam-canvas');
+    canvas.width  = video.videoWidth  || 1280;
+    canvas.height = video.videoHeight || 960;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Animate capture flash
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:absolute;inset:0;background:white;opacity:0.8;pointer-events:none;transition:opacity 0.3s;';
+    video.parentElement.appendChild(flash);
+    setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 300); }, 50);
+
+    // Convert canvas to File blob
+    canvas.toBlob(async (blob) => {
+      closeCameraModal();
+      const file = new File([blob], 'camera_scan.jpg', { type: 'image/jpeg' });
+      await processDocumentFile(file, 'camera');
+    }, 'image/jpeg', 0.92);
+  }
+
+  // ── Close camera modal and stop stream ────────────────────────────
+  function closeCameraModal() {
+    if (_camStream) {
+      _camStream.getTracks().forEach(t => t.stop());
+      _camStream = null;
+    }
+    const video = document.getElementById('cam-video');
+    video.srcObject = null;
+    document.getElementById('cam-modal').style.display = 'none';
+  }
+
+  // Close on backdrop click
+  document.getElementById('cam-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeCameraModal();
+  });
+</script>
+
+<!-- ── Nearby Healthcare ─────────────────────────────────────────────── -->
+<script>
+  function detectAndFindNearby() {
+    const btn = document.getElementById('nearby-btn');
+    btn.textContent = '⏳ Detecting location…';
+    btn.disabled = true;
+
+    if (!navigator.geolocation) {
+      window.location.href = '/nearby';
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(5);
+        const lon = pos.coords.longitude.toFixed(5);
+        window.location.href = `/nearby?lat=${lat}&lon=${lon}`;
+      },
+      () => {
+        // Permission denied — open map anyway, let user enter manually
+        window.location.href = '/nearby';
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
+</script>
+{% endblock %}

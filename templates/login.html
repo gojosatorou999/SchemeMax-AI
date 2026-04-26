@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Log In – SchemeMax AI{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card">
+      <div class="auth-header">
+        <span class="auth-icon">🔐</span>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-sub">Log in to view your matched schemes.</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form" id="login-form" novalidate>
+        <div class="form-group">
+          <label for="email" class="form-label">Email address</label>
+          <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" name="password" class="form-input" placeholder="Your password" required autocomplete="current-password" />
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="login-submit">
+          Log In
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        New to SchemeMax AI? <a href="{{ url_for('auth.signup') }}" id="goto-signup">Create a free account</a>
+      </p>
+
+      <div class="admin-hint">
+        Looking for the admin panel? <a href="#" onclick="document.getElementById('email').value='admin@gmail.com'; return false;" id="goto-admin">Admin login →</a>
+      </div>
+    </div>
+</section>
+{% endblock %}

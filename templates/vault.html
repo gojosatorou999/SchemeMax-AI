@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Document Vault – SchemeMax AI{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem;">
+
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+    <div>
+      <h1 class="dash-title">🗄️ Document Vault</h1>
+      <p class="dash-sub">Documents and reports extracted from your situation analyses and OCR uploads.</p>
+    </div>
+    <a href="{{ url_for('schemes.situation') }}" class="btn btn--primary">
+      + Upload New Document
+    </a>
+  </div>
+
+  {% if not situations %}
+    <div class="card" style="text-align:center; padding:4rem 2rem;">
+      <div style="font-size:4rem; margin-bottom:1rem;">📂</div>
+      <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:0.5rem;">Your vault is empty</h2>
+      <p style="color:var(--text-muted); margin-bottom:1.5rem;">Upload an Aadhaar card, Income Certificate, or any other document to the AI matcher and it'll appear here.</p>
+      <a href="{{ url_for('schemes.situation') }}" class="btn btn--primary">Start with AI Matcher →</a>
+    </div>
+  {% else %}
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.25rem;">
+      {% for sit in situations %}
+        <div class="card" style="transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow=''">
+          <div class="card-body">
+            <!-- Icon + Date -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
+              <div style="background:var(--accent-light); color:var(--accent-text); width:42px; height:42px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+                📄
+              </div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">
+                {{ sit['created_at'].strftime('%d %b %Y') if sit['created_at'] else '—' }}
+              </div>
+            </div>
+
+            <!-- Description excerpt -->
+            <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.4rem; color:var(--text);">
+              Situation Analysis #{{ sit['id'] }}
+            </div>
+            <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.5; max-height:60px; overflow:hidden;">
+              {{ sit['description'][:120] + '...' if sit['description'] and sit['description']|length > 120 else sit['description'] or 'No description' }}
+            </p>
+
+            <!-- Scheme count badge -->
+            <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.75rem; font-weight:600; color:var(--text-muted);">
+                {% if sit['matched_scheme_ids'] %}
+                  {% set count = sit['matched_scheme_ids'] | from_json | length %}
+                  {{ count }} scheme{{ 's' if count != 1 }} matched
+                {% else %}
+                  No matches yet
+                {% endif %}
+              </span>
+              <a href="{{ url_for('schemes.results', situation_id=sit['id']) }}"
+                 style="font-size:0.8rem; font-weight:600; color:var(--accent-text); text-decoration:none;">
+                View Report →
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

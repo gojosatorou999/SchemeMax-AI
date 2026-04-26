@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}AI Call Reports – SchemeMax AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="dash-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 class="dash-title">📞 AI Call Reports</h1>
+      <p class="dash-sub">Live synced reports from your AI calling agent — matched against 5,000+ schemes in real time.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <div id="sync-status" style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+        <span id="sync-dot" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
+        Live Sync Active
+      </div>
+      <button id="manual-sync" class="btn btn--ghost" style="font-size: 0.85rem;">
+        🔄 Sync Now
+      </button>
+    </div>
+  </div>
+
+  {% if not reports %}
+    <div class="card" style="text-align: center; padding: 4rem 2rem;">
+      <div style="font-size: 4rem; margin-bottom: 1rem;">📵</div>
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">No call reports yet</h2>
+      <p style="color: var(--text-muted);">Once your AI calling agent receives calls, they'll appear here automatically with matched schemes.</p>
+      <a href="https://7edb0d31-2c1a-4244-9a72-3a3fe08acfb4-00-iyse5cgciihi.sisko.replit.dev/" target="_blank" class="btn btn--primary" style="margin-top: 1.5rem;">
+        Launch AI Calling Agent ↗
+      </a>
+    </div>
+  {% else %}
+    <div id="reports-container">
+      {% for report in reports %}
+        <div class="call-report-card" data-id="{{ report.id }}">
+          <div class="call-report-header">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div class="call-avatar">{{ report.caller_name[0]|upper }}</div>
+              <div>
+                <div class="call-name">{{ report.caller_name }}</div>
+                <div class="call-meta">
+                  {% if report.phone %}<span>📞 {{ report.phone }}</span>{% endif %}
+                  {% if report.age %}<span>🎂 Age {{ report.age }}</span>{% endif %}
+                  {% if report.state %}<span>📍 {{ report.state }}</span>{% endif %}
+                  <span>🕐 {{ report.created_at }}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <span class="match-badge" style="background: var(--accent-light); color: var(--accent-text);">
+                {{ report.matched_schemes|length }} Schemes Matched
+              </span>
+              {% if report.phone %}
+              <button class="btn btn--ghost send-wa-btn"
+                      data-report-id="{{ report.id }}"
+                      data-phone="{{ report.phone }}"
+                      style="font-size: 0.8rem; padding: 0.4rem 0.8rem; color: #25D366; border-color: #25D366;">
+                📱 WhatsApp
+              </button>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Structured patient info -->
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+            {% if report.health_problem %}
+            <span style="background:#FEF3C7;color:#92400E;border-radius:6px;padding:0.25rem 0.65rem;font-size:0.78rem;font-weight:600;">🩺 {{ report.health_problem }}</span>
+            {% endif %}
+            {% if report.monthly_income %}
+            <span style="background:var(--accent-light);color:var(--accent-text);border-radius:6px;padding:0.25rem 0.65rem;font-size:0.78rem;font-weight:600;">💰 {{ report.monthly_income }}</span>
+            {% endif %}
+            {% if report.has_ayushman_card %}
+            <span style="background:var(--bg);color:var(--text-muted);border-radius:6px;padding:0.25rem 0.65rem;font-size:0.78rem;font-weight:600;border:1px solid var(--border);">🪪 Ayushman: {{ report.has_ayushman_card }}</span>
+            {% endif %}
+          </div>
+
+            <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Call Transcript / Summary</strong>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; max-height: 100px; overflow: hidden; position: relative;" id="transcript-{{ report.id }}">
+              {{ report.transcript }}
+            </p>
+            <button onclick="toggleTranscript({{ report.id }})" style="font-size: 0.8rem; color: var(--accent-text); font-weight: 600; background: none; border: none; cursor: pointer; margin-top: 0.25rem;">
+              Show more ↓
+            </button>
+          </div>
+
+          {% if report.matched_schemes %}
+            <div class="call-schemes">
+              <strong style="font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 0.75rem;">Matched Schemes</strong>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {% for scheme in report.matched_schemes %}
+                  <div class="call-scheme-row">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                      <div style="background: var(--accent-light); color: var(--accent-text); width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0;">🏛️</div>
+                      <div>
+                        <div style="font-weight: 600; font-size: 0.9rem;">{{ scheme.name }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ scheme.issuing_body }}</div>
+                      </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
+                      <span style="background: var(--accent-light); color: var(--accent-text); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; font-size: 0.75rem;">{{ scheme.score }}%</span>
+                      <a href="{{ url_for('schemes.scheme_detail', scheme_id=scheme.id) }}" style="color: var(--accent-text); font-size: 0.8rem; font-weight: 600;">View →</a>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <div style="padding: 1rem; background: var(--bg); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-muted);">
+              ⏳ AI analysis pending…
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  
+  .call-report-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s;
+  }
+  .call-report-card:hover { box-shadow: var(--shadow-md); }
+  .call-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .call-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: var(--primary-text);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; font-weight: 700; flex-shrink: 0;
+  }
+  .call-name { font-weight: 700; font-size: 1rem; }
+  .call-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 1rem; margin-top: 0.2rem; flex-wrap: wrap; }
+  .call-transcript { background: var(--bg); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem; }
+  .call-schemes { padding-top: 1rem; border-top: 1px solid var(--border); }
+  .call-scheme-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.75rem 1rem; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--bg);
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Toggle transcript expand/collapse
+  function toggleTranscript(id) {
+    const el = document.getElementById('transcript-' + id);
+    const btn = el.nextElementSibling;
+    if (el.style.maxHeight === 'none') {
+      el.style.maxHeight = '100px';
+      btn.textContent = 'Show more ↓';
+    } else {
+      el.style.maxHeight = 'none';
+      btn.textContent = 'Show less ↑';
+    }
+  }
+
+  // Manual sync
+  document.getElementById('manual-sync')?.addEventListener('click', function() {
+    this.textContent = '⏳ Syncing...';
+    this.disabled = true;
+    fetch('/api/sync-calls', { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.synced > 0) {
+          window.location.reload();
+        } else {
+          document.getElementById('sync-status').innerHTML = '<span style="color: var(--success);">✓ Up to date</span>';
+          this.textContent = '🔄 Sync Now';
+          this.disabled = false;
+        }
+      })
+      .catch(() => {
+        this.textContent = '🔄 Sync Now';
+        this.disabled = false;
+      });
+  });
+
+  // Auto-poll every 30s
+  setInterval(() => {
+    fetch('/api/sync-calls', { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.synced > 0) window.location.reload();
+      });
+  }, 30000);
+
+  // WhatsApp share
+  document.querySelectorAll('.send-wa-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const reportId = this.dataset.reportId;
+      const defaultPhone = this.dataset.phone || '';
+      const phone = prompt('Send to WhatsApp number (with country code):', defaultPhone);
+      if (!phone) return;
+      
+      this.textContent = '⏳ Sending...';
+      this.disabled = true;
+      
+      fetch('/api/whatsapp/share-call-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: reportId, to_number: phone })
+      })
+      .then(r => r.json())
+      .then(data => {
+        alert(data.success ? '✅ Sent to WhatsApp!' : '❌ Failed: ' + data.error);
+        this.textContent = '📱 WhatsApp';
+        this.disabled = false;
+      });
+    });
+  });
+</script>
+{% endblock %}

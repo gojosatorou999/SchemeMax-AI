@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Settings – SchemeMax AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 680px; padding: 3rem 1.5rem;">
+
+  <div style="margin-bottom: 2rem;">
+    <h1 class="dash-title">⚙️ Profile Settings</h1>
+    <p class="dash-sub">Update your personal information to get better scheme matches.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('main.settings') }}" id="settings-form">
+
+        <!-- Avatar preview -->
+        <div style="display:flex; align-items:center; gap:1.25rem; margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border);">
+          <img src="https://api.dicebear.com/7.x/notionists/svg?seed={{ g.user['email'] }}"
+               alt="Avatar"
+               style="width:64px;height:64px;border-radius:50%;border:3px solid var(--border);" />
+          <div>
+            <div style="font-weight:700; font-size:1.1rem;">{{ g.user['full_name'] or 'Your Name' }}</div>
+            <div style="font-size:0.85rem; color:var(--text-muted);">{{ g.user['email'] }}</div>
+            <div style="font-size:0.75rem; color:var(--accent-text); margin-top:0.2rem;">Member since {{ g.user['created_at'].strftime('%B %Y') if g.user['created_at'] else 'Today' }}</div>
+          </div>
+        </div>
+
+        <!-- Form Fields -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="full_name" class="form-input" value="{{ g.user['full_name'] or '' }}" placeholder="Ravi Kumar" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-input" value="{{ g.user['phone'] or '' }}" placeholder="+91 98765 43210" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.25rem;">
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <select name="state" class="form-input form-select">
+              <option value="">Select state</option>
+              {% for s in ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Delhi','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal'] %}
+                <option value="{{ s }}" {% if g.user['state'] == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Age</label>
+            <input type="number" name="age" class="form-input" value="{{ g.user['age'] or '' }}" placeholder="35" min="1" max="120" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:2rem;">
+          <div class="form-group">
+            <label class="form-label">Annual Household Income</label>
+            <select name="income_bracket" class="form-input form-select">
+              <option value="">Prefer not to say</option>
+              {% for val, label in [('below_1L','Below ₹1 Lakh (BPL)'),('1L_2.5L','₹1 – 2.5 Lakh'),('2.5L_5L','₹2.5 – 5 Lakh'),('5L_8L','₹5 – 8 Lakh'),('above_8L','Above ₹8 Lakh')] %}
+                <option value="{{ val }}" {% if g.user['income_bracket'] == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preferred Language</label>
+            <select name="preferred_language" class="form-input form-select">
+              <option value="en" {% if (g.user['preferred_language'] or 'en') == 'en' %}selected{% endif %}>English</option>
+              <option value="hi" {% if g.user['preferred_language'] == 'hi' %}selected{% endif %}>हिंदी (Hindi)</option>
+              <option value="te" {% if g.user['preferred_language'] == 'te' %}selected{% endif %}>తెలుగు (Telugu)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="save-settings">
+          Save Changes
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="card" style="margin-top:1.5rem; border-color:#FECACA;">
+    <div class="card-body">
+      <h3 style="font-size:1rem; font-weight:700; color:var(--danger); margin-bottom:0.5rem;">Danger Zone</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Log out of your account on this device.</p>
+      <a href="{{ url_for('auth.logout') }}" class="btn btn--ghost" style="color:var(--danger); border-color:var(--danger);">
+        🚪 Log Out
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

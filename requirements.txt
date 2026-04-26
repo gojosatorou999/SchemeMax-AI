@@ -1,0 +1,7 @@
+flask
+python-dotenv
+werkzeug
+openai
+twilio
+pytesseract
+pillow

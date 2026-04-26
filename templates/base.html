@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#F8FAFC" id="meta-theme-color" />
+  <title>{% block title %}SchemeMax AI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+  {% block head %}{% endblock %}
+  <style>
+    @media (max-width: 768px) {
+      .hide-mobile { display: none !important; }
+      .shrink-mobile { padding: 0.4rem 0.75rem !important; font-size: 0.75rem !important; }
+      .nav-inner { padding: 0 1rem !important; gap: 0.5rem !important; }
+      .nav-brand { font-size: 1.1rem !important; }
+      .nav-actions { gap: 0.35rem !important; }
+      .nav-login { font-size: 0.8rem !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════  NAVBAR  ═══════════════════════════ -->
+  <header style="background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;">
+    <div class="nav-inner"
+      style="max-width:1200px;margin:0 auto;padding:0 1.5rem;height:4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+
+      <!-- LEFT: Brand + Nav -->
+      <div style="display:flex;align-items:center;gap:1.5rem;flex:1;min-width:0;">
+        <a href="{{ url_for('main.index') }}" class="nav-brand"
+          style="font-weight:800;font-size:1.2rem;color:var(--text);text-decoration:none;white-space:nowrap;flex-shrink:0;">
+          SchemeMax <span style="color:#14B8A6;">AI</span>
+        </a>
+
+        {% if g.user %}
+        <nav style="display:flex;align-items:center;gap:0.1rem;">
+          <a href="{{ url_for('main.dashboard') }}"
+            style="font-size:0.85rem;font-weight:500;color:{% if request.endpoint=='main.dashboard' %}var(--text){% else %}var(--text-muted){% endif %};padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;{% if request.endpoint=='main.dashboard' %}background:var(--bg);{% endif %}">Overview</a>
+
+          <a href="{{ url_for('schemes.situation') }}"
+            style="font-size:0.85rem;font-weight:500;color:{% if request.endpoint in ['schemes.situation','schemes.results','schemes.scheme_detail'] %}var(--text){% else %}var(--text-muted){% endif %};padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;{% if request.endpoint in ['schemes.situation','schemes.results','schemes.scheme_detail'] %}background:var(--bg);{% endif %}">My
+            Schemes</a>
+
+          <a href="{{ url_for('calls.call_reports_page') }}"
+            style="font-size:0.85rem;font-weight:500;color:{% if request.endpoint=='calls.call_reports_page' %}var(--text){% else %}var(--text-muted){% endif %};padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:0.3rem;{% if request.endpoint=='calls.call_reports_page' %}background:var(--bg);{% endif %}">
+            Calls <span
+              style="background:#EF4444;color:#fff;font-size:0.5rem;font-weight:800;padding:0.1rem 0.3rem;border-radius:3px;">LIVE</span>
+          </a>
+
+          <a href="{{ url_for('nearby.nearby_page') }}"
+            style="font-size:0.85rem;font-weight:500;color:{% if request.endpoint=='nearby.nearby_page' %}var(--text){% else %}var(--text-muted){% endif %};padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:0.3rem;{% if request.endpoint=='nearby.nearby_page' %}background:var(--bg);{% endif %}">
+            Find Help
+          </a>
+
+          <a href="{{ url_for('main.vault') }}"
+            style="font-size:0.85rem;font-weight:500;color:{% if request.endpoint=='main.vault' %}var(--text){% else %}var(--text-muted){% endif %};padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;{% if request.endpoint=='main.vault' %}background:var(--bg);{% endif %}">Vault</a>
+
+          <a href="{{ url_for('main.settings') }}"
+            style="font-size:0.85rem;font-weight:500;color:{% if request.endpoint=='main.settings' %}var(--text){% else %}var(--text-muted){% endif %};padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;{% if request.endpoint=='main.settings' %}background:var(--bg);{% endif %}">Settings</a>
+
+          {% if g.user['email'] == config.get('ADMIN_EMAIL') %}
+          <a href="{{ url_for('admin.dashboard') }}"
+            style="font-size:0.85rem;font-weight:500;color:#6366F1;padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;">Admin</a>
+          {% endif %}
+        </nav>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT: Actions -->
+      <div class="nav-actions" style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
+
+        {% if not g.user %}
+        <div class="hide-mobile"
+          style="background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:0.35rem 0.9rem;display:flex;align-items:center;gap:0.4rem;">
+          <span style="color:var(--text-muted);font-size:0.8rem;">🔍</span>
+          <input type="text" placeholder="Search schemes..."
+            style="border:none;background:transparent;font-family:inherit;font-size:0.82rem;color:var(--text);outline:none;width:130px;" />
+        </div>
+        {% endif %}
+
+        <!-- Theme toggle -->
+        <button id="theme-toggle"
+          style="width:34px;height:34px;border-radius:50%;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;"
+          title="Toggle theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+
+        <!-- Language -->
+        <form action="{{ url_for('main.set_language') }}" method="POST" id="lang-form"
+          style="display:inline-flex;align-items:center;gap:0.2rem;">
+          <span style="color:var(--text-muted);font-size:0.9rem;">🌐</span>
+          <select name="lang" onchange="this.form.submit()"
+            style="appearance:none;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:0.82rem;cursor:pointer;outline:none;">
+            <option value="en" {% if session.get('lang','en')=='en' %}selected{% endif %}>EN</option>
+            <option value="hi" {% if session.get('lang')=='hi' %}selected{% endif %}>HI</option>
+            <option value="te" {% if session.get('lang')=='te' %}selected{% endif %}>TE</option>
+          </select>
+        </form>
+
+        {% if g.user %}
+        <!-- ── Profile Avatar + Dropdown ──────────────────────────── -->
+        <div style="position:relative;" id="profile-wrap">
+
+          <!-- Avatar button -->
+          <button id="profile-btn"
+            style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:0.3rem;"
+            title="Account">
+            <img src="https://api.dicebear.com/7.x/notionists/svg?seed={{ g.user['email'] }}"
+              style="width:34px;height:34px;border-radius:50%;border:2px solid var(--border);" alt="avatar" />
+            <span style="font-size:0.7rem;color:var(--text-muted);">▾</span>
+          </button>
+
+          <!-- Dropdown panel — hidden by default via inline style -->
+          <div id="profile-dropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:270px;
+                    background:var(--surface);border:1px solid var(--border);
+                    border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,0.16);
+                    z-index:9999;overflow:hidden;">
+
+            <!-- Header -->
+            <div
+              style="display:flex;align-items:center;gap:0.75rem;padding:1rem;border-bottom:1px solid var(--border);">
+              <img src="https://api.dicebear.com/7.x/notionists/svg?seed={{ g.user['email'] }}"
+                style="width:42px;height:42px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;" />
+              <div style="min-width:0;">
+                <div
+                  style="font-weight:700;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ g.user['full_name'] or g.user['email'].split('@')[0]|title }}
+                </div>
+                <div
+                  style="font-size:0.72rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ g.user['email'] }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border);">
+              <div style="text-align:center;padding:0.65rem 0.25rem;border-right:1px solid var(--border);">
+                <div style="font-size:0.82rem;font-weight:800;color:#0F766E;">{{ g.user['state'] or '—' }}</div>
+                <div
+                  style="font-size:0.58rem;text-transform:uppercase;font-weight:700;color:var(--text-muted);margin-top:1px;">
+                  State</div>
+              </div>
+              <div style="text-align:center;padding:0.65rem 0.25rem;border-right:1px solid var(--border);">
+                <div style="font-size:0.82rem;font-weight:800;color:#0F766E;">{{ g.user['age'] or '—' }}</div>
+                <div
+                  style="font-size:0.58rem;text-transform:uppercase;font-weight:700;color:var(--text-muted);margin-top:1px;">
+                  Age</div>
+              </div>
+              <div style="text-align:center;padding:0.65rem 0.25rem;">
+                <div style="font-size:0.82rem;font-weight:800;color:#0F766E;">{{ (g.user['preferred_language'] or
+                  'en')|upper }}</div>
+                <div
+                  style="font-size:0.58rem;text-transform:uppercase;font-weight:700;color:var(--text-muted);margin-top:1px;">
+                  Lang</div>
+              </div>
+            </div>
+
+            <!-- Info rows -->
+            <div style="padding:0.4rem 0;border-bottom:1px solid var(--border);">
+              {% if g.user['income_bracket'] %}
+              <div
+                style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 1rem;font-size:0.8rem;color:var(--text-muted);">
+                <span>💰</span> {{ g.user['income_bracket'].replace('_',' ').replace('L',' Lakh') }}
+              </div>
+              {% endif %}
+              {% if g.user['phone'] %}
+              <div
+                style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 1rem;font-size:0.8rem;color:var(--text-muted);">
+                <span>📞</span> {{ g.user['phone'] }}
+              </div>
+              {% endif %}
+              <div
+                style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 1rem;font-size:0.8rem;color:var(--text-muted);">
+                <span>📅</span> Member since {{ g.user['created_at'].strftime('%b %Y') if g.user['created_at'] else
+                'Today' }}
+              </div>
+            </div>
+
+            <!-- Action links -->
+            <div style="padding:0.3rem 0;">
+              <a href="{{ url_for('schemes.situation') }}"
+                style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 1rem;font-size:0.85rem;font-weight:500;color:var(--text);text-decoration:none;"
+                onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+                <span>✨</span> Find My Schemes
+              </a>
+              <a href="{{ url_for('main.settings') }}"
+                style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 1rem;font-size:0.85rem;font-weight:500;color:var(--text);text-decoration:none;"
+                onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+                <span>⚙️</span> Settings
+              </a>
+              <a href="{{ url_for('calls.call_reports_page') }}"
+                style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 1rem;font-size:0.85rem;font-weight:500;color:var(--text);text-decoration:none;"
+                onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+                <span>📞</span> Call Reports
+              </a>
+              {% if g.user['email'] == config.get('ADMIN_EMAIL') %}
+              <a href="{{ url_for('admin.dashboard') }}"
+                style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 1rem;font-size:0.85rem;font-weight:500;color:#6366F1;text-decoration:none;"
+                onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+                <span>🛡️</span> Admin
+              </a>
+              {% endif %}
+            </div>
+
+            <div style="height:1px;background:var(--border);"></div>
+
+            <a href="{{ url_for('auth.logout') }}"
+              style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 1rem;font-size:0.85rem;font-weight:600;color:#EF4444;text-decoration:none;"
+              onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background=''">
+              <span>🚪</span> Log Out
+            </a>
+          </div>
+        </div>
+        <!-- ─────────────────────────────────────────────────────────── -->
+
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="nav-login"
+          style="font-size:0.88rem;font-weight:600;color:var(--text-muted);text-decoration:none;">Log in</a>
+        <a href="{{ url_for('auth.signup') }}" class="shrink-mobile"
+          style="font-size:0.88rem;font-weight:600;background:var(--primary);color:var(--primary-text);padding:0.5rem 1.1rem;border-radius:6px;text-decoration:none;white-space:nowrap;">
+          Get Started
+        </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </header>
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div style="max-width:1200px;margin:1rem auto;padding:0 1.5rem;">
+    {% for category, message in messages %}
+    <div class="flash" style="padding:0.9rem 1.1rem;border-radius:8px;margin-bottom:0.5rem;font-weight:500;font-size:0.9rem;
+          {% if category=='error' %}background:#FEE2E2;color:#DC2626;border:1px solid #FECACA;
+          {% elif category=='success' %}background:#D1FAE5;color:#059669;border:1px solid #A7F3D0;
+          {% else %}background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Main -->
+  <main>{% block content %}{% endblock %}</main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container"
+      style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <strong>SchemeMax AI</strong>
+        <div style="margin-top:0.25rem;">© 2026 Department of Citizen Welfare. Government of India.</div>
+      </div>
+      <div style="display:flex;gap:1.5rem;">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Contact Support</a>
+      </div>
+    </div>
+  </footer>
+
+  {% if g.user %}
+  <!-- Floating AI Call Button — only for logged-in users -->
+  <a href="https://7edb0d31-2c1a-4244-9a72-3a3fe08acfb4-00-iyse5cgciihi.sisko.replit.dev/" target="_blank"
+    id="fab-call-agent" title="Open AI Calling Agent">📞</a>
+  {% endif %}
+  <!-- Theme Script -->
+  <script>
+    const _tt = document.getElementById('theme-toggle');
+    const _ti = document.getElementById('theme-icon');
+    const _r = document.documentElement;
+    const _m = document.getElementById('meta-theme-color');
+    function applyTheme(t) {
+      _r.setAttribute('data-theme', t);
+      _ti.textContent = t === 'dark' ? '☀️' : '🌙';
+      _m.setAttribute('content', t === 'dark' ? '#020617' : '#F8FAFC');
+    }
+    applyTheme(_r.getAttribute('data-theme'));
+    _tt.addEventListener('click', () => {
+      const next = _r.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+    });
+  </script>
+
+  <!-- Profile Dropdown Script -->
+  <script>
+    (function () {
+      const btn = document.getElementById('profile-btn');
+      const menu = document.getElementById('profile-dropdown');
+      const wrap = document.getElementById('profile-wrap');
+      if (!btn || !menu) return;
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!wrap.contains(e.target)) {
+          menu.style.display = 'none';
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') menu.style.display = 'none';
+      });
+    })();
+  </script>
+
+  <!-- Flash autoclose -->
+  <script>
+    setTimeout(() => {
+      document.querySelectorAll('.flash').forEach(el => {
+        el.style.transition = 'opacity 0.5s';
+        el.style.opacity = '0';
+      });
+    }, 4000);
+  </script>
+
+  <script src="{{ url_for('static', filename='js/sw-register.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

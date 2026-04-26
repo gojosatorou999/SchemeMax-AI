@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}{{ scheme['name'] }} – SchemeMax AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div style="font-size: 0.85rem; color: var(--text-muted); margin: 2rem 0 1rem;">
+    <a href="{{ url_for('main.dashboard') }}">My Schemes</a> &rsaquo; <span
+      style="color: var(--accent-text); font-weight: 600;">Scheme Details</span>
+  </div>
+
+  <div class="detail-layout">
+    <!-- Left Column: Details -->
+    <div>
+      <h1 class="detail-title">{{ scheme['name'] }}</h1>
+      <p class="detail-desc">{{ scheme['short_description'] }} A flagship scheme to provide end-to-end support to
+        citizens.</p>
+
+      <div class="highlights-grid">
+        <div class="hl-card">
+          <div class="hl-label"><span>AI MATCH SCORE</span> <span style="color: var(--success);">★</span></div>
+          <div class="hl-val" style="color: var(--primary);">{{ match_score | default('98') }}%</div>
+          <div class="hl-sub" style="color: var(--success); font-weight: 600;">Highly Eligible</div>
+          <div style="height: 4px; background: var(--bg); margin-top: 1rem; border-radius: 2px;">
+            <div style="height: 100%; width: 98%; background: var(--success); border-radius: 2px;"></div>
+          </div>
+        </div>
+
+        <div class="hl-card">
+          <div class="hl-label"><span>CREDIT SUPPORT</span> <span>💵</span></div>
+          <div class="hl-val">{{ scheme['benefit_amount'] }}</div>
+          <div class="hl-sub">Concessional Interest</div>
+        </div>
+
+        <div class="hl-card">
+          <div class="hl-label"><span>APPLICATION STATUS</span> <span>📅</span></div>
+          <div class="hl-val">Open</div>
+          <div class="hl-sub">Closes Dec 31, 2026</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding: 2rem;">
+          <h3 class="card-title" style="margin-bottom: 1.5rem; font-size: 1.5rem;">Key Benefits</h3>
+
+          <div class="benefits-grid">
+            <div style="display: flex; gap: 1rem;">
+              <div class="stat-icon stat-icon--accent" style="flex-shrink: 0;">🛠️</div>
+              <div>
+                <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Toolkit Incentive</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">A toolkit incentive through e-vouchers for
+                  purchasing basic equipment.</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+              <div class="stat-icon stat-icon--accent" style="flex-shrink: 0;">🎓</div>
+              <div>
+                <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Skill Upgradation</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Basic and Advanced training with a daily stipend
+                  during training.</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+              <div class="stat-icon stat-icon--accent" style="flex-shrink: 0;">🏅</div>
+              <div>
+                <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Recognition</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Certificate and ID Card for formal recognition
+                  of skills.</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+              <div class="stat-icon stat-icon--accent" style="flex-shrink: 0;">📈</div>
+              <div>
+                <h4 style="font-weight: 700; margin-bottom: 0.25rem;">Marketing Support</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Quality certification, branding, and advertising
+                  assistance to expand business.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Sidebar -->
+    <div>
+      <a href="{{ scheme['application_link'] }}" target="_blank" class="btn btn--primary"
+        style="width: 100%; margin-bottom: 1rem; padding: 1rem; font-size: 1.1rem;">
+        Apply Now ↗
+      </a>
+
+      <button class="btn btn--ghost" id="share-whatsapp-btn"
+        style="width: 100%; margin-bottom: 2rem; padding: 1rem; color: var(--accent-text); border-color: var(--accent);">
+        <span style="font-size: 1.2rem;">📱</span> Share to WhatsApp
+      </button>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        <span style="color: var(--success); font-size: 1.2rem;">✓</span>
+        <h3 style="font-size: 1.1rem; font-weight: 700;">AI Document Checklist</h3>
+      </div>
+
+      {% if scheme.get('checklist') %}
+      <ul class="checklist">
+        {% for doc in scheme.get('checklist', []) %}
+        <!-- Mocking the verified/missing state randomly or sequentially for design parity -->
+        <li class="check-item {% if loop.index == 3 %}missing{% else %}done{% endif %}">
+          <div class="check-item-icon">{% if loop.index == 3 %}❌{% else %}✓{% endif %}</div>
+          <div>
+            <div class="check-item-title">{{ doc }}</div>
+            <div class="check-item-sub">{% if loop.index == 3 %}Missing from vault - <a href="#"
+                style="color: var(--accent-text); font-weight: 600;">Upload Now</a>{% else %}Verified via Document
+              Vault{% endif %}</div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <!-- Fallback if no specific checklist -->
+      <ul class="checklist">
+        <li class="check-item done">
+          <div class="check-item-icon">✓</div>
+          <div>
+            <div class="check-item-title">Aadhaar Card</div>
+            <div class="check-item-sub">Verified via Document Vault</div>
+          </div>
+        </li>
+        <li class="check-item done">
+          <div class="check-item-icon">✓</div>
+          <div>
+            <div class="check-item-title">Caste Certificate</div>
+            <div class="check-item-sub">Detected in recent uploads</div>
+          </div>
+        </li>
+        <li class="check-item missing">
+          <div class="check-item-icon">❌</div>
+          <div>
+            <div class="check-item-title">Artisan ID Card</div>
+            <div class="check-item-sub">Missing from vault - <a href="#"
+                style="color: var(--accent-text); font-weight: 600;">↑ Upload Now</a></div>
+          </div>
+        </li>
+        <li class="check-item done">
+          <div class="check-item-icon">✓</div>
+          <div>
+            <div class="check-item-title">Bank Passbook</div>
+            <div class="check-item-sub">IFSC code confirmed</div>
+          </div>
+        </li>
+      </ul>
+      {% endif %}
+
+      <div class="insight-panel"
+        style="margin-top: 1.5rem; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start; background: var(--primary);">
+        <span style="color: var(--accent-text); font-size: 1.2rem;">✨</span>
+        <p style="font-size: 0.8rem; line-height: 1.5; color: #94A3B8; margin: 0;">Our AI has cross-referenced your
+          profile with the scheme requirements. Ensure all documents are clear for 1-click application processing.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('share-whatsapp-btn')?.addEventListener('click', function () {
+    const phone = prompt('Enter the phone number to share this scheme with (including country code, e.g. +919876543210):');
+    if (!phone) return;
+
+    const originalText = this.innerHTML;
+    this.innerHTML = 'Sending...';
+    this.disabled = true;
+
+    fetch('/api/whatsapp/share', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        scheme_id: {{ scheme['id'] }},
+      to_number: phone
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('Successfully shared on WhatsApp!');
+      } else {
+        alert('Failed to share: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Network error.');
+    })
+    .finally(() => {
+      this.innerHTML = originalText;
+      this.disabled = false;
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Create Account – SchemeMax AI{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card">
+      <div class="auth-header">
+        <span class="auth-icon">🏥</span>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-sub">It's free and takes under a minute.</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.signup') }}" class="auth-form" id="signup-form" novalidate>
+        <!-- Required fields -->
+        <div class="form-group">
+          <label for="email" class="form-label">Email address <span class="required">*</span></label>
+          <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password <span class="required">*</span></label>
+          <input type="password" id="password" name="password" class="form-input" placeholder="At least 6 characters" required autocomplete="new-password" minlength="6" />
+        </div>
+
+        <!-- Optional fields -->
+        <div class="form-divider"><span>Optional but helps with matching</span></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="full_name" class="form-label">Full name</label>
+            <input type="text" id="full_name" name="full_name" class="form-input" placeholder="Ravi Kumar" autocomplete="name" />
+          </div>
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone number</label>
+            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91 98765 43210" autocomplete="tel" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="state" class="form-label">State</label>
+            <select id="state" name="state" class="form-input form-select">
+              <option value="">Select your state</option>
+              <option>Andhra Pradesh</option>
+              <option>Arunachal Pradesh</option>
+              <option>Assam</option>
+              <option>Bihar</option>
+              <option>Chhattisgarh</option>
+              <option>Delhi</option>
+              <option>Goa</option>
+              <option>Gujarat</option>
+              <option>Haryana</option>
+              <option>Himachal Pradesh</option>
+              <option>Jharkhand</option>
+              <option>Karnataka</option>
+              <option>Kerala</option>
+              <option>Madhya Pradesh</option>
+              <option>Maharashtra</option>
+              <option>Manipur</option>
+              <option>Meghalaya</option>
+              <option>Mizoram</option>
+              <option>Nagaland</option>
+              <option>Odisha</option>
+              <option>Punjab</option>
+              <option>Rajasthan</option>
+              <option>Sikkim</option>
+              <option>Tamil Nadu</option>
+              <option>Telangana</option>
+              <option>Tripura</option>
+              <option>Uttar Pradesh</option>
+              <option>Uttarakhand</option>
+              <option>West Bengal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" id="age" name="age" class="form-input" placeholder="35" min="1" max="120" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="income_bracket" class="form-label">Annual household income</label>
+          <select id="income_bracket" name="income_bracket" class="form-input form-select">
+            <option value="">Prefer not to say</option>
+            <option value="below_1L">Below ₹1 Lakh (BPL)</option>
+            <option value="1L_2.5L">₹1 – 2.5 Lakh</option>
+            <option value="2.5L_5L">₹2.5 – 5 Lakh</option>
+            <option value="5L_8L">₹5 – 8 Lakh</option>
+            <option value="above_8L">Above ₹8 Lakh</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="preferred_language" class="form-label">Preferred language</label>
+          <select id="preferred_language" name="preferred_language" class="form-input form-select">
+            <option value="en">English</option>
+            <option value="hi">हिंदी (Hindi)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="signup-submit">
+          Create Account
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Already have an account? <a href="{{ url_for('auth.login') }}" id="goto-login">Log in here</a>
+      </p>
+    </div>
+</section>
+{% endblock %}

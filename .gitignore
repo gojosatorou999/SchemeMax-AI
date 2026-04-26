@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+*.db
+*.sqlite3
+ngrok.exe
+ngrok.zip
+venv/
+env/
+ENV/
+.venv/

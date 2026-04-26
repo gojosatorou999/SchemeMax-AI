@@ -1,0 +1,410 @@
+import json
+import os
+from datetime import datetime
+
+schemes = [
+    {
+        "name": "Ayushman Bharat PM-JAY",
+        "short_description": "Health coverage up to Rs. 5 lakhs per family per year for secondary and tertiary care hospitalization.",
+        "full_description": "Ayushman Bharat Pradhan Mantri Jan Arogya Yojana (PM-JAY) is the largest health assurance scheme in the world. It provides a health cover of Rs. 5 lakhs per family per year for secondary and tertiary care hospitalization to over 12 crore poor and vulnerable families.",
+        "benefit_amount": "Up to ₹5 Lakh / year",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": [],
+            "income_max": 250000,
+            "categories": ["general", "cardiac", "cancer", "accident", "maternal", "pediatric"],
+            "conditions": []
+        },
+        "required_documents": ["Aadhaar Card", "Ration Card", "Income Certificate", "PMJAY e-Card"],
+        "application_link": "https://pmjay.gov.in/",
+        "helpline": "14555",
+        "issuing_body": "National Health Authority",
+        "category": "central",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Central Government Health Scheme (CGHS)",
+        "short_description": "Comprehensive medical care to the Central Government employees and pensioners.",
+        "full_description": "The Central Government Health Scheme (CGHS) provides comprehensive medical care to the Central Government employees and pensioners enrolled under the scheme. It covers outpatient care, hospitalization, and supply of medicines.",
+        "benefit_amount": "Varies by pay scale",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": [],
+            "income_max": None,
+            "categories": ["general", "cardiac", "cancer", "maternal", "pediatric"],
+            "conditions": ["central government employee", "pensioner"]
+        },
+        "required_documents": ["CGHS Card", "Aadhaar Card", "Pay Slip/Pension Payment Order"],
+        "application_link": "https://cghs.nic.in/",
+        "helpline": "1800 208 8900",
+        "issuing_body": "Ministry of Health & Family Welfare",
+        "category": "central",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Employees' State Insurance Scheme (ESIC)",
+        "short_description": "Social security and health insurance scheme for Indian workers.",
+        "full_description": "The Employees' State Insurance Scheme (ESIC) is an integrated measure of Social Insurance embodied in the Employees' State Insurance Act. It provides protection to employees against sickness, maternity, disablement and death due to employment injury.",
+        "benefit_amount": "Full coverage for employee & dependents",
+        "eligibility_json": {
+            "min_age": 18,
+            "max_age": 60,
+            "states": [],
+            "income_max": 252000,
+            "categories": ["general", "accident", "maternal"],
+            "conditions": ["industrial worker", "employee"]
+        },
+        "required_documents": ["ESIC Pehchan Card", "Aadhaar Card", "Employment Proof"],
+        "application_link": "https://www.esic.nic.in/",
+        "helpline": "1800 11 2526",
+        "issuing_body": "Employees' State Insurance Corporation",
+        "category": "insurance",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Rashtriya Arogya Nidhi (RAN)",
+        "short_description": "Financial assistance to patients living below poverty line suffering from major life-threatening diseases.",
+        "full_description": "RAN provides financial assistance to patients, living below poverty line and who are suffering from major life threatening diseases, to receive medical treatment at any of the super specialty Government hospitals / institutes.",
+        "benefit_amount": "Financial assistance for treatment",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": [],
+            "income_max": 100000,
+            "categories": ["cancer", "cardiac", "kidney", "rare diseases"],
+            "conditions": ["life-threatening disease", "BPL"]
+        },
+        "required_documents": ["BPL Card", "Income Certificate", "Medical Reports", "Estimate from Govt Hospital"],
+        "application_link": "https://main.mohfw.gov.in/major-programmes/poor-patients-financial-assistance",
+        "helpline": "011-23061695",
+        "issuing_body": "Ministry of Health & Family Welfare",
+        "category": "central",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Health Minister's Discretionary Grant (HMDG)",
+        "short_description": "Financial assistance to the poor and needy patients to defray a part of the expenditure on hospitalization.",
+        "full_description": "Financial assistance up to a maximum of Rs. 1,25,000/- is provided to poor patients to defray a part of the expenditure on hospitalization/treatment in Government Hospitals for major diseases.",
+        "benefit_amount": "Up to ₹1,25,000",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": [],
+            "income_max": 125000,
+            "categories": ["general", "cardiac", "cancer"],
+            "conditions": ["treatment in government hospital"]
+        },
+        "required_documents": ["Income Certificate", "Medical Reports", "Estimate from Govt Hospital"],
+        "application_link": "https://main.mohfw.gov.in/",
+        "helpline": "011-23061695",
+        "issuing_body": "Ministry of Health & Family Welfare",
+        "category": "central",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Aarogyasri (Telangana)",
+        "short_description": "State health insurance for BPL families in Telangana.",
+        "full_description": "Aarogyasri provides financial protection to families living below poverty line for the treatment of serious ailments requiring hospitalization and surgery. It covers pre-existing diseases and provides cashless treatment.",
+        "benefit_amount": "Up to ₹5 Lakh / year",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Telangana"],
+            "income_max": 200000,
+            "categories": ["general", "cardiac", "cancer", "accident"],
+            "conditions": ["white ration card"]
+        },
+        "required_documents": ["White Ration Card", "Aadhaar Card", "Aarogyasri Health Card"],
+        "application_link": "https://aarogyasri.telangana.gov.in/",
+        "helpline": "104",
+        "issuing_body": "Aarogyasri Health Care Trust",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Dr. YSR Aarogyasri (Andhra Pradesh)",
+        "short_description": "Health insurance scheme for BPL families in Andhra Pradesh.",
+        "full_description": "Providing quality healthcare to the poor. The scheme provides financial assistance to BPL families to meet the catastrophic health needs.",
+        "benefit_amount": "Up to ₹5 Lakh / year",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Andhra Pradesh"],
+            "income_max": 500000,
+            "categories": ["general", "cardiac", "cancer", "accident"],
+            "conditions": ["rice card holder"]
+        },
+        "required_documents": ["Rice Card", "Aadhaar Card", "Aarogyasri Card"],
+        "application_link": "https://www.ysraarogyasri.ap.gov.in/",
+        "helpline": "104",
+        "issuing_body": "Dr. YSR Aarogyasri Health Care Trust",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Chief Minister's Comprehensive Health Insurance Scheme (CMCHIS)",
+        "short_description": "Health insurance for low-income families in Tamil Nadu.",
+        "full_description": "The scheme provides quality health care to the eligible persons through empanelled Government and Private hospitals and to reduce the financial hardship to the enrolled families and move towards universal health coverage.",
+        "benefit_amount": "Up to ₹5 Lakh / year",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Tamil Nadu"],
+            "income_max": 120000,
+            "categories": ["general", "cardiac", "cancer", "accident", "pediatric"],
+            "conditions": []
+        },
+        "required_documents": ["Income Certificate", "Family Card (Ration Card)", "Aadhaar Card"],
+        "application_link": "https://www.cmchistn.com/",
+        "helpline": "104",
+        "issuing_body": "Govt of Tamil Nadu",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Mahatma Jyotirao Phule Jan Arogya Yojana (MJPJAY)",
+        "short_description": "Cashless health insurance scheme for citizens of Maharashtra.",
+        "full_description": "MJPJAY provides cashless quality medical care to beneficiaries for catastrophic illnesses requiring hospitalization for surgeries and therapies.",
+        "benefit_amount": "Up to ₹1.5 Lakh / year (₹2.5 Lakh for renal transplant)",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Maharashtra"],
+            "income_max": 100000,
+            "categories": ["general", "cardiac", "cancer", "accident"],
+            "conditions": []
+        },
+        "required_documents": ["Yellow/Orange/Antyodaya Ration Card", "Aadhaar Card", "Health Card"],
+        "application_link": "https://www.jeevandayee.gov.in/",
+        "helpline": "155388",
+        "issuing_body": "State Health Assurance Society",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Karunya Health Scheme",
+        "short_description": "Financial assistance for the poor suffering from acute ailments in Kerala.",
+        "full_description": "The scheme provides financial assistance to poor people suffering from acute ailments like Cancer, Haemophilia, Kidney and Heart diseases and for Palliative Care.",
+        "benefit_amount": "Up to ₹2 Lakh",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Kerala"],
+            "income_max": 300000,
+            "categories": ["cancer", "cardiac", "kidney", "haemophilia", "palliative care"],
+            "conditions": []
+        },
+        "required_documents": ["Income Certificate", "Aadhaar Card", "Medical Reports", "Estimate from hospital"],
+        "application_link": "http://www.karunya.kerala.gov.in/",
+        "helpline": "1056",
+        "issuing_body": "Kerala State Lotteries / Govt of Kerala",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Yeshasvini Cooperative Farmers Health Care Scheme",
+        "short_description": "Health scheme for farmers belonging to cooperative societies in Karnataka.",
+        "full_description": "Provides cost effective medical facilities to the farmers of the State who are members of cooperative societies. Covers various surgical procedures.",
+        "benefit_amount": "Up to ₹2 Lakh for surgery",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 75,
+            "states": ["Karnataka"],
+            "income_max": None,
+            "categories": ["surgery", "general"],
+            "conditions": ["member of cooperative society", "farmer"]
+        },
+        "required_documents": ["Cooperative Society Membership Proof", "Yeshasvini Card", "Aadhaar Card"],
+        "application_link": "https://sahakara.kar.gov.in/yeshasvini.html",
+        "helpline": "1800 425 8330",
+        "issuing_body": "Dept of Cooperation, Karnataka",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Biju Swasthya Kalyan Yojana (BSKY)",
+        "short_description": "Universal health coverage for the people of Odisha.",
+        "full_description": "BSKY aims to provide universal health coverage, with special emphasis on the health protection of economically vulnerable families. Free health services for all in State Govt hospitals.",
+        "benefit_amount": "Up to ₹5 Lakh/year (₹10 Lakh for women)",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Odisha"],
+            "income_max": None,
+            "categories": ["general", "maternal", "pediatric", "cardiac", "cancer", "accident"],
+            "conditions": ["BPL", "AAY", "ration card holder"]
+        },
+        "required_documents": ["Biju Swasthya Kalyan Yojana Card", "Ration Card", "Aadhaar Card"],
+        "application_link": "https://health.odisha.gov.in/biju-swasthya-kalyan-yojana",
+        "helpline": "104",
+        "issuing_body": "Govt of Odisha",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Mukhyamantri Amrutum (MA) Yojana",
+        "short_description": "Health coverage for BPL families in Gujarat.",
+        "full_description": "To ensure that the poor families in Gujarat are not pushed into poverty due to out-of-pocket health expenditure for catastrophic illnesses, the MA Yojana provides tertiary care.",
+        "benefit_amount": "Up to ₹5 Lakh / year",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Gujarat"],
+            "income_max": 400000,
+            "categories": ["general", "cardiac", "cancer", "renal", "neuro"],
+            "conditions": []
+        },
+        "required_documents": ["MA Card", "Income Certificate", "Aadhaar Card"],
+        "application_link": "https://magujarat.com/",
+        "helpline": "1800 233 1022",
+        "issuing_body": "Govt of Gujarat",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Bhamashah Swasthya Bima Yojana",
+        "short_description": "Health insurance for families covered under NFSA in Rajasthan.",
+        "full_description": "Provides cashless facility for IPD patients, reduces out-of-pocket expenditure, and improves quality of care to the poor in Rajasthan.",
+        "benefit_amount": "Up to ₹3 Lakh",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Rajasthan"],
+            "income_max": None,
+            "categories": ["general", "cardiac", "cancer", "maternal"],
+            "conditions": ["NFSA beneficiary", "Bhamashah card holder"]
+        },
+        "required_documents": ["Bhamashah Card", "Aadhaar Card", "Ration Card"],
+        "application_link": "https://health.rajasthan.gov.in/",
+        "helpline": "104",
+        "issuing_body": "Govt of Rajasthan",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Swasthya Sathi",
+        "short_description": "Basic health cover for secondary and tertiary care in West Bengal.",
+        "full_description": "Swasthya Sathi is a Group Health Insurance Scheme providing basic health cover for secondary and tertiary care up to Rs. 5 Lakh per annum per family.",
+        "benefit_amount": "Up to ₹5 Lakh / year",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["West Bengal"],
+            "income_max": None,
+            "categories": ["general", "cardiac", "cancer", "maternal"],
+            "conditions": []
+        },
+        "required_documents": ["Swasthya Sathi Smart Card", "Aadhaar Card"],
+        "application_link": "https://swasthyasathi.gov.in/",
+        "helpline": "1800 345 5384",
+        "issuing_body": "Govt of West Bengal",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Delhi Arogya Kosh (DAK)",
+        "short_description": "Financial assistance for medical treatment in Delhi.",
+        "full_description": "DAK provides financial assistance for medical treatment to the eligible residents of Delhi in Government Hospitals. Covers surgeries, implants, and high-end diagnostic tests.",
+        "benefit_amount": "Up to ₹5 Lakh",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Delhi"],
+            "income_max": 300000,
+            "categories": ["surgery", "diagnostics", "implants"],
+            "conditions": ["resident of Delhi for 3 years"]
+        },
+        "required_documents": ["Voter ID/Aadhaar (Delhi address)", "Income Certificate", "National Food Security Card", "Estimate from Delhi Govt Hospital"],
+        "application_link": "https://health.delhi.gov.in/",
+        "helpline": "104",
+        "issuing_body": "Govt of NCT of Delhi",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Prime Minister's National Relief Fund (PMNRF) - Medical Assistance",
+        "short_description": "Financial assistance to poor patients for treatment at govt/private hospitals.",
+        "full_description": "The PMNRF provides financial assistance to poor patients for treatment of major diseases at government and selected private hospitals. It covers diseases like cancer, heart surgery, kidney transplant, etc.",
+        "benefit_amount": "Varies (Financial assistance)",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": [],
+            "income_max": 200000,
+            "categories": ["cancer", "cardiac", "kidney", "acid attack"],
+            "conditions": ["insufficient funds for treatment"]
+        },
+        "required_documents": ["Application to PMO", "Original Medical Estimate", "Income Certificate", "Copy of Ration Card/Aadhaar"],
+        "application_link": "https://pmnrf.gov.in/",
+        "helpline": "011-23012312",
+        "issuing_body": "Prime Minister's Office",
+        "category": "central",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Health Minister's Cancer Patient Fund (HMCPF)",
+        "short_description": "Financial assistance to BPL cancer patients.",
+        "full_description": "A corpus fund created to provide financial assistance to poor patients suffering from cancer. It is utilized for patients receiving treatment in Regional Cancer Centres.",
+        "benefit_amount": "Financial assistance for cancer treatment",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": [],
+            "income_max": 100000,
+            "categories": ["cancer"],
+            "conditions": ["BPL"]
+        },
+        "required_documents": ["BPL Card", "Income Certificate", "Medical Reports", "Estimate from Regional Cancer Centre"],
+        "application_link": "https://main.mohfw.gov.in/",
+        "helpline": "011-23061695",
+        "issuing_body": "Ministry of Health & Family Welfare",
+        "category": "central",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Aam Aadmi Bima Yojana (AABY)",
+        "short_description": "Social security scheme for rural landless households.",
+        "full_description": "A social security scheme for rural landless households providing insurance cover against natural death, accidental death, and partial/permanent disability.",
+        "benefit_amount": "₹30,000 to ₹75,000",
+        "eligibility_json": {
+            "min_age": 18,
+            "max_age": 59,
+            "states": [],
+            "income_max": 100000,
+            "categories": ["accident", "disability", "death"],
+            "conditions": ["rural landless household", "head of family or earning member"]
+        },
+        "required_documents": ["Aadhaar Card", "Ration Card", "Extract from Gram Panchayat", "Death/Disability Certificate"],
+        "application_link": "https://licindia.in/",
+        "helpline": "1800 425 9876",
+        "issuing_body": "LIC / Govt of India",
+        "category": "insurance",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    },
+    {
+        "name": "Deen Dayal Upadhyaya State Employees Cashless Medical Scheme",
+        "short_description": "Cashless medical scheme for UP state govt employees.",
+        "full_description": "Cashless medical treatment facility for State Government employees, pensioners and their dependents in Uttar Pradesh at empanelled private and government hospitals.",
+        "benefit_amount": "Cashless treatment up to Rs 5 Lakh",
+        "eligibility_json": {
+            "min_age": 0,
+            "max_age": 120,
+            "states": ["Uttar Pradesh"],
+            "income_max": None,
+            "categories": ["general", "cardiac", "cancer", "accident"],
+            "conditions": ["state government employee", "pensioner"]
+        },
+        "required_documents": ["State Health Card", "Aadhaar Card", "Employee ID/Pensioner ID"],
+        "application_link": "http://uphealth.up.nic.in/",
+        "helpline": "1800 180 5145",
+        "issuing_body": "Govt of Uttar Pradesh",
+        "category": "state",
+        "last_verified": datetime.now().strftime("%Y-%m-%d")
+    }
+]
+
+with open('data/schemes_seed.json', 'w') as f:
+    json.dump(schemes, f, indent=4)
+print("Saved schemes_seed.json")
