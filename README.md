@@ -24,7 +24,7 @@ SchemeMax AI is a comprehensive, production-ready Flask web application designed
 * **Progressive Web App (PWA):** Fully installable on mobile and desktop devices. Features a Service Worker that caches static assets and essential routes, ensuring fast load times and offline resilience for static resources.
 * **Multi-language Support (i18n):** Supports English, Hindi (हिन्दी), and Telugu (తెలుగు) with dynamic client-side and server-side translation capabilities.
 
-### User Interface & Experience
+### User Interface & Experience :
 * **Professional Aesthetics:** Clean, mobile-first design utilizing a modern Deep Blue/Teal color palette, soft glassmorphism, and responsive CSS variables.
 * **User Accounts:** Secure signup, login, and session management. User profiles securely store demographic information (state, age, income bracket) to streamline the matching process.
 * **Dashboard:** A personalized dashboard to track previous situations and immediately jump back into matched schemes.
