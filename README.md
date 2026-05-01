@@ -71,7 +71,7 @@ SchemeMax AI is a comprehensive, production ready Flask web application designed
    ```
    The database will automatically initialize and populate itself with seed data upon the first request.
 
-## 📁 Directory Structure
+## 📁 Directory Structure 
 * `/routes` - Blueprint controllers (auth, main, schemes, ocr, whatsapp, admin)
 * `/services` - Integrations (LLM client, Scheme Matcher, Twilio sender, Tesseract OCR)
 * `/templates` - Jinja2 HTML views
