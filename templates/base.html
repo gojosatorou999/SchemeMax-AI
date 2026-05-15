@@ -38,7 +38,7 @@
 
       <!-- LEFT: Brand + Nav -->
       <div style="display:flex;align-items:center;gap:1.5rem;flex:1;min-width:0;">
-        <a href="{{ url_for('main.index') }}" class="nav-brand"
+        <a href="{{ url_for('main.dashboard') if g.user else url_for('main.index') }}" class="nav-brand"
           style="font-weight:800;font-size:1.2rem;color:var(--text);text-decoration:none;white-space:nowrap;flex-shrink:0;">
           SchemeMax <span style="color:#14B8A6;">AI</span>
         </a>

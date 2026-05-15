@@ -41,7 +41,23 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = db.query("SELECT * FROM users WHERE id = ?", (user_id,), one=True)
+        # Check DB first
+        user = db.query("SELECT * FROM users WHERE id = ?", (user_id,), one=True)
+        if user:
+            g.user = dict(user)
+        else:
+            # Vercel fallback: restore from session cookie if DB was wiped
+            g.user = {
+                "id": user_id,
+                "email": session.get("user_email", ""),
+                "full_name": session.get("user_full_name", ""),
+                "phone": session.get("user_phone", ""),
+                "state": session.get("user_state", ""),
+                "age": session.get("user_age", ""),
+                "income_bracket": session.get("user_income_bracket", ""),
+                "preferred_language": session.get("lang", "en"),
+                "created_at": None
+            }
 
 
 # ─── Signup ────────────────────────────────────────────────────────────────────
@@ -97,6 +113,11 @@ def signup():
         session.clear()
         session["user_id"] = user["id"]
         session["user_email"] = user["email"]
+        session["user_full_name"] = user["full_name"]
+        session["user_phone"] = user["phone"]
+        session["user_state"] = user["state"]
+        session["user_age"] = user["age"]
+        session["user_income_bracket"] = user["income_bracket"]
         session["lang"] = preferred_language
 
         flash("Welcome to SchemeMax AI! Your account has been created.", "success")
@@ -128,6 +149,11 @@ def login():
         session.clear()
         session["user_id"] = user["id"]
         session["user_email"] = user["email"]
+        session["user_full_name"] = user["full_name"]
+        session["user_phone"] = user["phone"]
+        session["user_state"] = user["state"]
+        session["user_age"] = user["age"]
+        session["user_income_bracket"] = user["income_bracket"]
         session["lang"] = user["preferred_language"] or "en"
 
         flash(f"Welcome back, {user['full_name'] or user['email']}!", "success")
