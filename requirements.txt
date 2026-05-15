@@ -1,7 +1,7 @@
-flask
-python-dotenv
-werkzeug
-openai
-twilio
-pytesseract
-pillow
+flask>=3.0.0
+python-dotenv>=1.0.0
+werkzeug>=3.0.0
+openai>=1.0.0
+twilio>=9.0.0
+pillow>=10.0.0
+pytesseract>=0.3.10

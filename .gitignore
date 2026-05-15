@@ -11,3 +11,4 @@ venv/
 env/
 ENV/
 .venv/
+.vercel/

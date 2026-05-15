@@ -1,13 +1,17 @@
 """
 app.py — SchemeMax AI Flask application factory
 
-SETUP NOTES (for Replit / production):
-  1. Copy .env.example to .env and fill in your keys.
-  2. Set APP_BASE_URL to your Replit public URL.
-  3. Twilio WhatsApp sandbox: the recipient must first send
+SETUP NOTES (for Vercel / production):
+  1. Set environment variables in the Vercel dashboard (not .env):
+       SECRET_KEY, OPENAI_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
+  2. The database uses SQLite in-memory on Vercel (stateless environment).
+     User data is not persisted between cold starts — this is expected for
+     a demo/prototype. For persistence, connect a hosted DB (e.g. PlanetScale,
+     Supabase, Neon) and swap db.py for a SQLAlchemy/psycopg2 adapter.
+  3. OCR (Tesseract) is disabled on Vercel — users can paste text manually.
+  4. Twilio WhatsApp sandbox: the recipient must first send
      `join <sandbox-code>` to whatsapp:+14155238886 before
      they can receive sandbox messages from your app.
-  4. Tesseract must be installed on the system (apt install tesseract-ocr on Linux).
 """
 
 import os
@@ -53,8 +57,11 @@ def create_app():
 
     # ── Initialise DB and seed data inside app context ───────────────────────
     with app.app_context():
-        db.init_db()
-        seed.seed_if_empty()
+        try:
+            db.init_db()
+            seed.seed_if_empty()
+        except Exception as exc:
+            app.logger.warning(f"DB init/seed warning (non-fatal): {exc}")
 
     return app
 
