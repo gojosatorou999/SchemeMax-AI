@@ -11,10 +11,8 @@ import datetime
 from flask import g, current_app
 
 # --------------------------------------------------------------------------- #
-# In-memory shared connection (used on Vercel / read-only filesystems)        #
+# Vercel /tmp Database Fallback                                               #
 # --------------------------------------------------------------------------- #
-_INMEM_CONN: sqlite3.Connection | None = None
-
 
 def _parse_timestamp(val):
     """
@@ -37,61 +35,49 @@ def _parse_timestamp(val):
         except ValueError:
             return val  # return as-is rather than crash
 
-
 # Register the converter so it applies globally
 sqlite3.register_converter("TIMESTAMP", _parse_timestamp)
 sqlite3.register_converter("timestamp", _parse_timestamp)
 
-
 def _is_readonly_env() -> bool:
-    """Return True when we can't write to the database path (e.g. Vercel)."""
-    db_path = os.environ.get("DATABASE_PATH", "mediScheme.db")
-    if db_path == ":memory:":
-        return True
-    # Try to open the file for append; if it fails the FS is read-only
+    """Return True when we can't write to the current directory (e.g. Vercel)."""
     try:
-        with open(db_path, "ab"):
+        with open("test_write.tmp", "w"):
             pass
+        os.remove("test_write.tmp")
         return False
     except (OSError, IOError):
         return True
 
-
-def _get_inmem_conn() -> sqlite3.Connection:
-    """Return (creating if needed) the process-level in-memory connection."""
-    global _INMEM_CONN
-    if _INMEM_CONN is None:
-        _INMEM_CONN = sqlite3.connect(
-            ":memory:",
-            check_same_thread=False,
-            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
-        )
-        _INMEM_CONN.row_factory = sqlite3.Row
-    return _INMEM_CONN
-
-
 def get_db():
     """Return a database connection scoped to the current Flask application context."""
     if "db" not in g:
-        db_path = current_app.config["DATABASE_PATH"]
+        db_path = current_app.config.get("DATABASE_PATH", "mediScheme.db")
 
-        # If the file DB isn't writable (Vercel), fall back to in-memory
-        if db_path == ":memory:" or _is_readonly_env():
-            g.db = _get_inmem_conn()
-        else:
-            g.db = sqlite3.connect(
-                db_path,
-                detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
-            )
-            g.db.row_factory = sqlite3.Row
+        # If the file DB isn't writable (Vercel), fall back to /tmp which is writable
+        is_vercel = os.environ.get("VERCEL") == "1" or _is_readonly_env()
+        
+        if is_vercel:
+            tmp_path = "/tmp/mediScheme.db"
+            if not os.path.exists(tmp_path):
+                import shutil
+                orig_db = os.path.join(current_app.root_path, "mediScheme.db")
+                if os.path.exists(orig_db):
+                    shutil.copy2(orig_db, tmp_path)
+            db_path = tmp_path
+
+        g.db = sqlite3.connect(
+            db_path,
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+        )
+        g.db.row_factory = sqlite3.Row
     return g.db
 
 
 def close_db(e=None):
-    """Teardown: close the db connection if it was opened (skip for in-memory)."""
+    """Teardown: close the db connection if it was opened."""
     db = g.pop("db", None)
-    # Don't close the shared in-memory connection — it would wipe all data
-    if db is not None and db is not _INMEM_CONN:
+    if db is not None:
         db.close()
 
 
