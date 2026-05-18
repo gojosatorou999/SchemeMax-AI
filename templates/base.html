@@ -20,11 +20,45 @@
   <style>
     @media (max-width: 768px) {
       .hide-mobile { display: none !important; }
+      .desktop-nav { display: none !important; }
+      .mobile-nav { display: flex !important; }
+      body { padding-bottom: 4rem; }
       .shrink-mobile { padding: 0.4rem 0.75rem !important; font-size: 0.75rem !important; }
       .nav-inner { padding: 0 1rem !important; gap: 0.5rem !important; }
       .nav-brand { font-size: 1.1rem !important; }
       .nav-actions { gap: 0.35rem !important; }
       .nav-login { font-size: 0.8rem !important; }
+    }
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      height: 4rem;
+      z-index: 1000;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .mobile-nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+    .mobile-nav a.active {
+      color: var(--primary);
+    }
+    .mobile-nav a span.icon {
+      font-size: 1.2rem;
     }
   </style>
 </head>
@@ -44,7 +78,7 @@
         </a>
 
         {% if g.user %}
-        <nav style="display:flex;align-items:center;gap:0.1rem;">
+        <nav class="desktop-nav" style="display:flex;align-items:center;gap:0.1rem;">
           <a href="{{ url_for('main.dashboard') }}"
             style="font-size:0.85rem;font-weight:500;color:{% if request.endpoint=='main.dashboard' %}var(--text){% else %}var(--text-muted){% endif %};padding:0.4rem 0.7rem;border-radius:6px;text-decoration:none;white-space:nowrap;{% if request.endpoint=='main.dashboard' %}background:var(--bg);{% endif %}">Overview</a>
 
@@ -257,6 +291,28 @@
 
   <!-- Main -->
   <main>{% block content %}{% endblock %}</main>
+
+  {% if g.user %}
+  <!-- Mobile Bottom Navigation -->
+  <div class="mobile-nav">
+    <a href="{{ url_for('main.dashboard') }}" class="{% if request.endpoint=='main.dashboard' %}active{% endif %}">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="{{ url_for('schemes.situation') }}" class="{% if request.endpoint in ['schemes.situation','schemes.results','schemes.scheme_detail'] %}active{% endif %}">
+      <span class="icon">✨</span>
+      <span>Schemes</span>
+    </a>
+    <a href="{{ url_for('nearby.nearby_page') }}" class="{% if request.endpoint=='nearby.nearby_page' %}active{% endif %}">
+      <span class="icon">🗺️</span>
+      <span>Help</span>
+    </a>
+    <a href="{{ url_for('calls.call_reports_page') }}" class="{% if request.endpoint=='calls.call_reports_page' %}active{% endif %}">
+      <span class="icon">📞</span>
+      <span>Calls</span>
+    </a>
+  </div>
+  {% endif %}
 
   <!-- Footer -->
   <footer class="site-footer">

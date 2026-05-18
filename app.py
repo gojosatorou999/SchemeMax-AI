@@ -63,6 +63,15 @@ def create_app():
         except Exception as exc:
             app.logger.warning(f"DB init/seed warning (non-fatal): {exc}")
 
+    # ── Service Worker (PWA Root Scope) ──────────────────────────────────────
+    @app.route('/sw.js')
+    def sw():
+        from flask import send_from_directory
+        response = send_from_directory('static', 'service-worker.js')
+        response.headers['Service-Worker-Allowed'] = '/'
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
+
     return app
 
 
