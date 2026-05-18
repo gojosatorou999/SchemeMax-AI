@@ -69,6 +69,7 @@ def get_db():
         g.db = sqlite3.connect(
             db_path,
             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+            timeout=20.0
         )
         g.db.row_factory = sqlite3.Row
     return g.db
