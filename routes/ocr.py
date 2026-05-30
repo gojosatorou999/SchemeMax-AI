@@ -3,7 +3,7 @@ import uuid
 import tempfile
 from flask import Blueprint, request, jsonify
 from routes.auth import login_required
-from services.ocr import extract_text
+from services.ocr import extract_text 
 
 ocr_bp = Blueprint("ocr", __name__)
 
