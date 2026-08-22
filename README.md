@@ -11,7 +11,7 @@
 
 SchemeMax AI is a comprehensive, production ready Flask web application designed to help Indian residents discover and apply for government medical and welfare schemes.By leveraging AI (LLMs) and Optical Character Recognition (OCR), SchemeMax AI accurately matches users with relevant support programs based on their unique situations and medical records.
 
-
+  
 </div>   
 
 ## 🚀 Features
