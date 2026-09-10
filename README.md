@@ -39,7 +39,7 @@ SchemeMax AI is a comprehensive, production ready Flask web application designed
 * **AI / NLP:** OpenAI API (`gpt-4o-mini` or similar)
 * **OCR:** Pytesseract (Tesseract OCR Engine)
 * **Messaging:** Twilio API
-
+<div align = "center">
 ## ⚙️ Configuration & Setup
 
 1. **Environment Variables:**
@@ -53,7 +53,7 @@ SchemeMax AI is a comprehensive, production ready Flask web application designed
    ADMIN_EMAIL=admin@schememax.in
    APP_BASE_URL=http://localhost:5000
    ```
-
+</div>
 2. **System Dependencies (for OCR):**
    * Ensure Tesseract is installed on your system.
    * **Windows:** Download the installer from UB-Mannheim and add it to your PATH.
